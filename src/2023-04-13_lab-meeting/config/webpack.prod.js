@@ -9,7 +9,7 @@ module.exports = merge(common, {
   devtool: 'source-map',
   output: {
     path: path.resolve(__dirname, '../dist'),
-    publicPath: '/slides/2023-04-13_lab-meeting',
+    publicPath: '/slides/2023-04-13_lab-meeting/',
     filename: 'js/[name].[contenthash].bundle.js',
   },
   module: {

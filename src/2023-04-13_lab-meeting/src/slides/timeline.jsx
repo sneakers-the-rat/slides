@@ -25,7 +25,8 @@ const Timeline = (
         bottom: "20%",
         transform: 'rotate(-30deg)'
       }}>
-        "It's about information freedom<br/>not free information"
+        "It's about information freedom<br/>
+        not free information"
       </span>
 
 
