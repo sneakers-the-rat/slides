@@ -1,0 +1,8 @@
+<ul>
+    {% for slides in site.data.slides %}
+    <li>
+        <span class="date">{{ slides.date }}</span> - <a href="{{ slides.path }}">{{ slides.name }}</a>
+        <p>{{ slides.description }}</p>
+    </li>
+    {% endfor %}
+</ul>
