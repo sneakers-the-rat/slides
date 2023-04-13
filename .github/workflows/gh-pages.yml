@@ -21,7 +21,7 @@ jobs:
         slideshow:
           - 2023-04-13_lab-meeting
     steps:
-      - uses: ./actions/spectacle.yml
+      - uses: ./.github/actions/spectacle.yml
         with:
           path: ${{ matrix.slideshow }}
 
