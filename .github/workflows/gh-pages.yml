@@ -53,7 +53,7 @@ jobs:
         id: slides-cache
         with:
           path: src/2023-04-13_lab-meeting/dist
-          key: ${{ runner.os }}-slidesv1-${{ hashFiles('./slides/src/**/*') }}
+          key: ${{ runner.os }}-slidesv1-${{ hashFiles('./src/2023-04-13_lab-meeting/src/**/*') }}
           restore-keys: |
             ${{ runner.os }}-slidesv1-
       - name: Build Slides
