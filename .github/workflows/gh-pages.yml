@@ -28,7 +28,7 @@ jobs:
 
   jekyll:
     runs-on: ubuntu-latest
-      needs: slides
+    needs: slides
 
     steps:
       - uses: actions/checkout@v3
