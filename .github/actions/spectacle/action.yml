@@ -21,6 +21,7 @@ runs:
       working-directory: src/${{ inputs.path }}
       id: yarn-cache-dir-path
       run: echo "::set-output name=dir::$(yarn cache dir)"
+      shell: bash
     - name: Yarn cache
       working-directory: src/${{ inputs.path }}
       uses: actions/cache@v3
@@ -33,6 +34,7 @@ runs:
     - name: Install Yarn Dependencies
       working-directory: src/${{ inputs.path }}
       run: yarn install --frozen-lockfile
+      shell: bash
     - name: Slides cache
       working-directory: src/${{ inputs.path }}
       uses: actions/cache@v3
@@ -45,9 +47,8 @@ runs:
     - name: Build Slides
       working-directory: src/${{ inputs.path }}
       if: ${{ steps.slides-cache.outputs.cache-hit != 'true' }}
-      run:
-        - npm run build
-        - mv dist ${{ inputs.path }}
+      run: npm run build && mv dist ${{ inputs.path }}
+      shell: bash
     - name: Upload Artifact
       working-directory: src/${{ inputs.path }}
       uses: actions/upload-artifact@v3
