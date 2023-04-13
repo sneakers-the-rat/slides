@@ -51,7 +51,7 @@ const P2P = (
               },
               {
                 targets:'#schematic-1 #knowledge',
-                opacity: [0,0],
+                opacity: [0,1],
                 strokeDashoffset: [anime.setDashoffset, 0],
                 duration: () => (anime.random(500, 1000)),
                 delay: () => (anime.random(0,1000))
