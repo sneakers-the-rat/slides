@@ -83,7 +83,7 @@ module.exports = {
     // new CleanWebpackPlugin(),
     new HtmlWebPackPlugin({
       template: path.resolve( __dirname, '../public/index.html' ),
-      title: "Swarmpunk: Rough Consensus and Running Code in Brains, Machines, and Society"
+      title: "Lab Meeting: 2023-04-12"
     }),
     new webpack.ProvidePlugin({
       process: 'process/browser',
