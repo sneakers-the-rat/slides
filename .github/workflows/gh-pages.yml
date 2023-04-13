@@ -12,19 +12,59 @@ jobs:
 #      - uses: actions/@checkout@v3
   # use this: https://github.com/marketplace/actions/yq-portable-yaml-processor
 
+#  slides:
+#    # This should definitely be abstracted, but for now just going
+#    # to hardcode each slide directory
+#    runs-on: ubuntu-latest
+#    strategy:
+#      matrix:
+#        slideshow:
+#          - 2023-04-13_lab-meeting
+#    steps:
+#      - uses: actions/checkout@v3
+#      - uses: ./.github/actions/spectacle
+#        with:
+#          path: ${{ matrix.slideshow }}
+
   slides:
-    # This should definitely be abstracted, but for now just going
-    # to hardcode each slide directory
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        slideshow:
-          - 2023-04-13_lab-meeting
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/spectacle
+      - name: Install Node
+        uses: actions/setup-node@v3
         with:
-          path: ${{ matrix.slideshow }}
+          node-version: 18
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+      - name: Yarn cache
+        uses: actions/cache@v3
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarnv1-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarnv1-
+      - name: Install Yarn Dependencies
+        run: yarn install --frozen-lockfile
+        working-directory: src/2023-04-13_lab-meeting
+      - name: Slides cache
+        uses: actions/cache@v3
+        id: slides-cache
+        with:
+          path: src/2023-04-13_lab-meeting/dist
+          key: ${{ runner.os }}-slidesv1-${{ hashFiles('./slides/src/**/*') }}
+          restore-keys: |
+            ${{ runner.os }}-slidesv1-
+      - name: Build Slides
+        if: ${{ steps.slides-cache.outputs.cache-hit != 'true' }}
+        run: npm run build
+        working-directory: src/2023-04-13_lab-meeting
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: slides-artifact
+          path: src/2023-04-13_lab-meeting/dist/
 
 
   jekyll:
