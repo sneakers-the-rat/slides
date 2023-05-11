@@ -1,14 +1,15 @@
 import React from 'react';
-import {Heading, Text} from 'spectacle';
+import {Heading, Text, Image} from 'spectacle';
+import IFrame from '../components/iframe.jsx';
+
+import translator from '../assets/img/translator.png';
 
 const Translator = (
     <>
       <Heading textAlign={"left"}>
         NIH: Biomedical Translator
       </Heading>
-      <Text>
-        Basic structure using one of their figures
-      </Text>
+      <Image src={translator} style={{height:"80%", width:"80%"}}/>
 
 
     </>
@@ -19,9 +20,7 @@ const Arax = (
       <Heading textAlign={"left"}>
         ARAX
       </Heading>
-      <Text>
-        Example ARAX query
-      </Text>
+      <IFrame src={"https://arax.rtx.ai/"}></IFrame>
 
 
     </>

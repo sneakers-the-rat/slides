@@ -1,9 +1,9 @@
 {
-  "name": "2023-04-13_lab-meeting",
+  "name": "2023-05-11_lab-meeting",
   "version": "1.0.0",
   "description": "Slides for lab meeting!",
   "main": "index.js",
-  "repository": "https://jon-e.net/slides/2023-04-13_lab-meeting",
+  "repository": "https://jon-e.net/slides/2023-05-11_lab-meeting",
   "author": "sneakers-the-rat",
   "license": "AGPL-3.0",
   "scripts": {
@@ -12,14 +12,20 @@
     "build": "cross-env NODE_ENV=production webpack --config config/webpack.prod.js"
   },
   "dependencies": {
+    "@emotion/react": "^11.11.0",
+    "@emotion/styled": "^11.11.0",
+    "@mui/material": "^5.13.0",
+    "@mui/styles": "^5.12.3",
     "animejs": "^3.2.1",
     "ramda": "^0.29.0",
     "ramda-adjunct": "^4.0.0",
+    "random": "^4.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-svg": "^16.1.7",
     "spectacle": "^9.7.0",
-    "spectacle-cli": "^0.6.5"
+    "spectacle-cli": "^0.6.5",
+    "transform-parser": "^1.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.21.4",

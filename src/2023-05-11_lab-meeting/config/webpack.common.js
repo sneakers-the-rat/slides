@@ -83,7 +83,7 @@ module.exports = {
     // new CleanWebpackPlugin(),
     new HtmlWebPackPlugin({
       template: path.resolve( __dirname, '../public/index.html' ),
-      title: "Lab Meeting: 2023-04-12"
+      title: "Lab Meeting: 2023-05-11"
     }),
     new webpack.ProvidePlugin({
       process: 'process/browser',

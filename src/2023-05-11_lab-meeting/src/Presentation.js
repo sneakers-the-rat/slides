@@ -2,19 +2,19 @@ import React from 'react';
 import { Deck, Slide, Progress } from 'spectacle';
 
 import Timeline from './slides/timeline.jsx';
-import KGs from './slides/kgs.jsx';
+import {KGs, Schema, RELX} from './slides/kgs.jsx';
 import {Translator, Arax} from './slides/translator.jsx';
 import Cloud from './slides/cloud.jsx';
-import {ALMs} from './slides/llms.jsx';
+import {ALMs, Harms} from './slides/llms.jsx';
 import SG_ETC from './slides/etc.jsx';
-import {P2P, P2P_Comparison, P2P_LD} from './slides/p2p.jsx';
+import {P2P, P2P_Comparison, P2P_LD, P2P_LD2, Interfaces} from './slides/p2p.jsx';
 
 import Surveillance from './slides/surveillance.jsx';
 import Ipt from './slides/ipt.jsx';
 // import P2P from './slides/p2p.jsx';
 
 
-const slides = [Timeline, KGs, Translator, Arax, Cloud, ALMs, SG_ETC, P2P, P2P_Comparison, P2P_LD]
+const slides = [Timeline, KGs, Schema, RELX, Translator, Arax, Cloud, ALMs, Harms, SG_ETC, P2P, P2P_Comparison, P2P_LD, P2P_LD2, Interfaces]
 
 const theme = {
   colors: {

@@ -1,11 +1,12 @@
 import React from 'react';
-import { Deck, Slide, Heading, Text } from 'spectacle';
+import { Deck, Slide, Heading, Text, Link, UnorderedList, ListItem } from 'spectacle';
 
 import SvgAnimator from '../components/svg_animator';
 
 import overview from '../assets/img/schematic-diagram-02.svg';
 
 import anime from 'animejs';
+import {List} from '@mui/material';
 
 const P2P = (
     <>
@@ -13,7 +14,7 @@ const P2P = (
       P2P Overview
     </Heading>
       <Text>
-        P2P network example from dissertation
+        Not enough time to port slide, see <Link href={"https://jon-e.net/dissertation/slides/?slideIndex=21&stepIndex=0"} >prior presentation</Link>
       </Text>
     </>
 )
@@ -21,10 +22,10 @@ const P2P = (
 const P2P_Comparison = (
     <>
     <Heading>
-      Existing protocols
+      Existing protocols (whiteboard)
     </Heading>
       <Text>
-        Table comparing Bittorrent, IPFS, etc.
+
       </Text>
     </>
 )
@@ -34,10 +35,40 @@ const P2P_LD = (
     <Heading>
       P2P-LD
     </Heading>
-      <Text>
-        Whiteboard time sketching the outlines of P2P LD
-      </Text>
+      <UnorderedList>
+        <ListItem>
+          Merkle DAGs + Scoping
+        </ListItem>
+        <ListItem>
+          Capability-based security
+        </ListItem>
+        <ListItem>
+          P2P Schemas and forking
+        </ListItem>
+        <ListItem>
+          Backwards-compatibility with Bittorrent, IPFS, ActivityPub
+        </ListItem>
+        <ListItem>
+          The Continuation of the SOLID project
+        </ListItem>
+      </UnorderedList>
 
+    </>
+)
+
+const P2P_LD2 = (
+    <>
+      <Heading>
+        P2P-LD (whiteboard)
+      </Heading>
+
+    </>
+)
+
+const Interfaces = (
+    <>
+    <Heading>Interfaces</Heading>
+    <Text>Also see <Link href={"https://jon-e.net/dissertation/slides/?slideIndex=40&stepIndex=0"}>Prior presentation</Link></Text>
     </>
 )
 
@@ -164,4 +195,4 @@ const P2P_System = (
     </div>
 )
 
-export {P2P, P2P_Comparison, P2P_LD}
+export {P2P, P2P_Comparison, P2P_LD, P2P_LD2, Interfaces}
