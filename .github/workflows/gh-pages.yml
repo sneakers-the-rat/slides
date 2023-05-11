@@ -93,9 +93,9 @@ jobs:
         id: slides-cache
         with:
           path: src/2023-05-11_lab-meeting/dist
-          key: ${{ runner.os }}-slidesv1-${{ hashFiles('./src/2023-05-11_lab-meeting/src/**/*') }}
+          key: ${{ runner.os }}-slidesv2-${{ hashFiles('./src/2023-05-11_lab-meeting/src/**/*') }}
           restore-keys: |
-            ${{ runner.os }}-slidesv1-
+            ${{ runner.os }}-slidesv2-
       - name: Build Slides
         if: ${{ steps.slides-cache.outputs.cache-hit != 'true' }}
         run: npm run build
