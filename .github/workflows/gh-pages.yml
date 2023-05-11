@@ -42,7 +42,7 @@ jobs:
         id: yarn-cache
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarnv1-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-yarnv1-${{ hashFiles('./src/2023-04-13_lab-meeting/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarnv1-
       - name: Install Yarn Dependencies
@@ -66,6 +66,46 @@ jobs:
           name: slides-artifact
           path: src/2023-04-13_lab-meeting/dist/
 
+  slides2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+      - name: Yarn cache
+        uses: actions/cache@v3
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarnv1-${{ hashFiles('./src/2023-05-11_lab-meeting/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarnv1-
+      - name: Install Yarn Dependencies
+        run: yarn install --frozen-lockfile
+        working-directory: src/2023-05-11_lab-meeting
+      - name: Slides cache
+        uses: actions/cache@v3
+        id: slides-cache
+        with:
+          path: src/2023-05-11_lab-meeting/dist
+          key: ${{ runner.os }}-slidesv1-${{ hashFiles('./src/2023-05-11_lab-meeting/src/**/*') }}
+          restore-keys: |
+            ${{ runner.os }}-slidesv1-
+      - name: Build Slides
+        if: ${{ steps.slides-cache.outputs.cache-hit != 'true' }}
+        run: npm run build
+        working-directory: src/2023-05-11_lab-meeting
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: slides-artifact
+          path: src/2023-05-11_lab-meeting/dist/
+
 
   jekyll:
     runs-on: ubuntu-latest
@@ -85,6 +125,12 @@ jobs:
         with:
           name: slides-artifact
           path: site/2023-04-13_lab-meeting/
+
+      - name: Download Slides Artifact 2
+        uses: actions/download-artifact@v3
+        with:
+          name: slides-artifact
+          path: site/2023-05-11_lab-meeting/
           # Use GitHub Actions' cache to shorten build times and decrease load on servers
       - uses: helaili/jekyll-action@2.4.0    # Choose any one of the Jekyll Actions
         with:                                # Some relative inputs of your action
