@@ -179,10 +179,16 @@ jobs:
         with:
           name: slides-artifact-3
           path: dist/2023-08-03_earthseed/
+
+      - name: Download Slides Artifact 3 again bc jekyll is ridiculous
+        uses: actions/download-artifact@v3
+        with:
+          name: slides-artifact-3
+          path: site/2023-08-03_earthseed/
           # Use GitHub Actions' cache to shorten build times and decrease load on servers
       - uses: helaili/jekyll-action@2.4.0    # Choose any one of the Jekyll Actions
         with:                                # Some relative inputs of your action
           token: ${{ secrets.GITHUB_TOKEN }}
           jekyll_src: "site"
-          build_dir: dist
+          build_dir: "dist"
           target_branch: 'gh-pages'
