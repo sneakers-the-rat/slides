@@ -182,7 +182,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: slides-artifact-3
-          path: site/dist/2023-08-03_earthseed/
+          path: dist/2023-08-03_earthseed/
 
       - name: run tree 1
         run: tree ./
@@ -197,7 +197,7 @@ jobs:
         with:                                # Some relative inputs of your action
           token: ${{ secrets.GITHUB_TOKEN }}
           jekyll_src: "site"
-          build_dir: "dist"
+          build_dir: "../dist"
           target_branch: 'gh-pages'
 
       - name: run tree 2
