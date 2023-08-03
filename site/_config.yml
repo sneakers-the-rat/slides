@@ -39,7 +39,7 @@ include:
   - 2023-08-03_earthseed/_static
   - "2023-08-03_earthseed/**/*"
 
-keep_files: ["2023-08-03_earthseed/", "2023-08-03_earthseed/**/*"]
+keep_files: ["2023-08-03_earthseed/", "2023-08-03_earthseed/**/*", "earthseed", "earthseed/**/*"]
 
 
 # Exclude from processing.

@@ -174,17 +174,17 @@ jobs:
           name: slides-artifact-2
           path: site/2023-05-11_lab-meeting/
 
-      - name: Download Slides Artifact 3
-        uses: actions/download-artifact@v3
-        with:
-          name: slides-artifact-3
-          path: dist/2023-08-03_earthseed/
+      # - name: Download Slides Artifact 3
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: slides-artifact-3
+      #     path: dist/earthseed/
 
       - name: Download Slides Artifact 3 again bc jekyll is ridiculous
         uses: actions/download-artifact@v3
         with:
           name: slides-artifact-3
-          path: site/2023-08-03_earthseed/
+          path: site/earthseed/
           # Use GitHub Actions' cache to shorten build times and decrease load on servers
       - uses: helaili/jekyll-action@2.4.0    # Choose any one of the Jekyll Actions
         with:                                # Some relative inputs of your action
