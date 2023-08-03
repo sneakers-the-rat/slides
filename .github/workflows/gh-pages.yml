@@ -218,7 +218,7 @@ jobs:
         run: tree ./
 
       - name: Upload pages artifact
-        uses: actions/upload-pages-artifact
+        uses: actions/upload-pages-artifact@v2
         with:
           path: "site"
 
