@@ -184,5 +184,5 @@ jobs:
         with:                                # Some relative inputs of your action
           token: ${{ secrets.GITHUB_TOKEN }}
           jekyll_src: "site"
-          build_dir: dist/
+          build_dir: dist
           target_branch: 'gh-pages'
