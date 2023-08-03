@@ -182,7 +182,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: slides-artifact-3
-          path: dist/earthseed/
+          path: site/dist/earthseed/
 
       - name: run tree 1
         run: tree ./
