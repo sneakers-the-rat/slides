@@ -108,39 +108,40 @@ jobs:
 
   slides3:
     runs-on: ubuntu-latest
-    - uses: actions/checkout@v2
+    steps:
+      - uses: actions/checkout@v2
 
-    # Install dependencies
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.11
+      # Install dependencies
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.11
 
-    - name: Install dependencies
-      working-directory: src/2023-08-02_earthseed/
-      run: |
-        pip install .
+      - name: Install dependencies
+        working-directory: src/2023-08-02_earthseed/
+        run: |
+          pip install .
 
-    - name: Slides cache
-      uses: actions/cache@v3
-      id: slides-cache-3
-      with:
-        path: src/2023-08-02_earthseed/dist
-        key: ${{ runner.os }}-slidesv3-${{ hashFiles('./src/2023-08-02_earthseed/src/**/*') }}
-        restore-keys: |
-          ${{ runner.os }}-slidesv3-
+      - name: Slides cache
+        uses: actions/cache@v3
+        id: slides-cache-3
+        with:
+          path: src/2023-08-02_earthseed/dist
+          key: ${{ runner.os }}-slidesv3-${{ hashFiles('./src/2023-08-02_earthseed/src/**/*') }}
+          restore-keys: |
+            ${{ runner.os }}-slidesv3-
 
-    - name: Build the book
-      if: ${{ steps.slides-cache-3.outputs.cache-hit != 'true' }}
-      working-directory: src/2023-08-02_earthseed/
-      run: |
-        jupyter-book build slides/ --path-output dist/
+      - name: Build the book
+        if: ${{ steps.slides-cache-3.outputs.cache-hit != 'true' }}
+        working-directory: src/2023-08-02_earthseed/
+        run: |
+          jupyter-book build slides/ --path-output dist/
 
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: slides-artifact-3
-        path: src/2023-08-02_earthseed/dist/_build/html
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: slides-artifact-3
+          path: src/2023-08-02_earthseed/dist/_build/html
 
 
 
