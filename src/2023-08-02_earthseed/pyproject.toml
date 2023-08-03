@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "2023-08-02-earthseed"
+version = "0.1.0"
+description = "Just some slides for lab meeting"
+authors = ["sneakers-the-rat <JLSaunders987@gmail.com>"]
+license = "CC-BY-NC"
+readme = "README.md"
+packages = [{include = "slides"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+jupyter-book = "^0.15.1"
+livereload = "^2.6.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

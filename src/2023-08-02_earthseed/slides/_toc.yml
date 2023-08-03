@@ -1,0 +1,35 @@
+# Table of contents
+# Learn more at https://jupyterbook.org/customize/toc.html
+
+format: jb-book
+root: intro
+parts:
+  - caption: 1. The Dawn of Earthseed
+    chapters:
+      - file: 01_dawn/it
+      - file: 01_dawn/rproxy
+      - file: 01_dawn/ansible
+  - caption: 2. A Golden Age of Web Services
+    chapters:
+      - file: 02_services/nextcloud
+      - file: 02_services/opm
+  - caption: 3. Journey to Chatbridge
+    chapters:
+      - file: 03_chatbridge/matrix
+        sections:
+          - file: 03_chatbridge/matterbridge
+      - file: 03_chatbridge/chatbridge-intro
+        sections:
+          - file: 03_chatbridge/chatbridge-architecture
+          - file: 03_chatbridge/chatbridge-client
+          - file: 03_chatbridge/chatbridge-server
+  - caption: 4. A Turn to P2P
+    chapters:
+      - file: 04_p2p-ld/problems 
+      - file: 04_p2p-ld/comparison
+        sections:
+          - file: 04_p2p-ld/rdf
+          - file: 04_p2p-ld/ssb
+      - file: 04_p2p-ld/roadmap
+        sections:
+          - file: 04_p2p-ld/nwb

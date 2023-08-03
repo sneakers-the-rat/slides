@@ -1,0 +1,40 @@
+/* Fixing sidebar */
+@media(min-width:960px) {
+  nav.bd-links {
+    width: 100%;
+  }
+}
+
+.bd-sidebar-primary .sidebar-primary-items__end {
+  margin-top: unset
+}
+
+/* For fullwidth */
+
+@media(min-width:960px) {
+  .bd-page-width {
+    max-width: unset
+  }
+}
+
+.bd-main {
+    width: 100%;
+}
+
+.bd-main .bd-content .bd-article-container {
+  max-width:unset;
+}
+
+@media (min-width:1100px) {
+  .bd-sidebar-primary {
+    max-width: 10%;
+  }
+}
+
+footer.bd-footer-content {
+    display: none;
+}
+
+.bd-main .bd-content .bd-article-container .bd-article {
+    flex-grow: 1;
+}
