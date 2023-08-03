@@ -186,7 +186,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: slides-artifact-3
-          path: site/dist/2023-08-03_earthseed/
+          path: _site/2023-08-03_earthseed/
 
       - name: run tree 1
         run: tree ./
@@ -209,7 +209,7 @@ jobs:
         uses: actions/configure-pages@v3
 
       - name: build jekyll site
-        run: bundle exec jekyll build -d dist 
+        run: bundle exec jekyll build -d ../_site
         env:
           JEKYLL_ENV: production
         working-directory: site
@@ -219,8 +219,6 @@ jobs:
 
       - name: Upload pages artifact
         uses: actions/upload-pages-artifact@v2
-        with:
-          path: "site/"
 
   deploy:
     environment:
