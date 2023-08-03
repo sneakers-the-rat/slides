@@ -10,17 +10,17 @@ parts:
         sections:
           - file: 01_dawn/it-uoit
           - file: 01_dawn/it-ucla
+          - file: 01_dawn/it-labor
       - file: 01_dawn/rproxy
       - file: 01_dawn/ansible
   - caption: 2. A Golden Age of Web Services
     chapters:
       - file: 02_services/nextcloud
       - file: 02_services/opm
+      - file: 02_services/etc
   - caption: 3. Journey to Chatbridge
     chapters:
       - file: 03_chatbridge/matrix
-        sections:
-          - file: 03_chatbridge/matterbridge
       - file: 03_chatbridge/chatbridge-intro
         sections:
           - file: 03_chatbridge/chatbridge-architecture

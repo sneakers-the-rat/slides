@@ -1,3 +1,8 @@
 # Chatbridge is Born
 
-(Video Demo)
+Hence, Chatbridge
+
+
+```{video} ../_static/chatbridge_draft.mp4
+:class: slide-video
+```   

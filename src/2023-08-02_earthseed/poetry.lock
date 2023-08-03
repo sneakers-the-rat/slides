@@ -1950,6 +1950,25 @@ lint = ["docutils-stubs", "flake8", "mypy"]
 test = ["pytest"]
 
 [[package]]
+name = "sphinxcontrib-video"
+version = "0.2.0"
+description = "Allows embedding of HTML5 videos in sphinx"
+optional = false
+python-versions = ">=3.6.9"
+files = [
+    {file = "sphinxcontrib-video-0.2.0.tar.gz", hash = "sha256:c98afef50a5452d5a6960fd57c6b57b71da9b825cadaa56c1b6c77338bfd0284"},
+    {file = "sphinxcontrib_video-0.2.0-py3-none-any.whl", hash = "sha256:8973278316c02547efd0910bfd69205385462c423885cf03edc28b1c66f3b23c"},
+]
+
+[package.dependencies]
+sphinx = "*"
+
+[package.extras]
+dev = ["mypy", "nox", "pre-commit"]
+doc = ["pydata-sphinx-theme (==0.13.0rc3)", "sphinx-design"]
+test = ["beautifulsoup4", "pytest", "pytest-cov", "pytest-regressions"]
+
+[[package]]
 name = "sqlalchemy"
 version = "2.0.19"
 description = "Database Abstraction Library"
@@ -2180,4 +2199,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "a63924bb466cbe00d1a8ce92a3c95f5986197b65c50c171f34488932891768ce"
+content-hash = "a7cfb205199fca02cc4b5a8d947a354ed93a244a5af3911a9d9f35e19214db80"

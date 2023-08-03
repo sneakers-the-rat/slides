@@ -11,6 +11,8 @@ packages = [{include = "slides"}]
 python = "^3.11"
 jupyter-book = "^0.15.1"
 livereload = "^2.6.3"
+sphinx-design = "^0.3.0"
+sphinxcontrib-video = "^0.2.0"
 
 
 [build-system]

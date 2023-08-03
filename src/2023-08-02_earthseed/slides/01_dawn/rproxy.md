@@ -8,6 +8,7 @@ UCLA IT made me waste two weeks to compensate for their preposterous security th
 
 - `seed.aharoni-lab.com` points to the VPS with a public IP.
 - Local server connects to VPS and creates a reverse tunnel
+- Use the Noise Protocol to encrypt between VPS and server
 
 `````{div} flex-twocol
 ````{div} flex-col
@@ -58,46 +59,37 @@ remote_public_key = "PUBLIC KEY"
 
 Nginx routes HTTP/S to the rathole ports
 
-`````{div} flex-twocol
-````{div} flex-col
 ```nginx
 server {
-   server_name seed.aharoni-lab.com;
-   location / {
-      proxy_pass http://127.0.0.1:5202;
-      proxy_set_header    Host            $host;
-      proxy_set_header    X-Real-IP       $remote_addr;
-      proxy_set_header    X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_hide_header   X-Powered-By;
-      proxy_http_version 1.1;
-      proxy_set_header Upgrade $http_upgrade;
-      proxy_set_header Connection "upgrade";
-      proxy_read_timeout 86400;
-   }
+  server_name seed.aharoni-lab.com;
+  location / {
+    proxy_pass http://127.0.0.1:5202;
+    proxy_http_version  1.1;
+    proxy_set_header    Host            $host;
+    proxy_set_header    X-Real-IP       $remote_addr;
+    proxy_set_header    X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_hide_header   X-Powered-By;
+    proxy_set_header    Upgrade         $http_upgrade;
+    proxy_set_header    Connection      "upgrade";
+    proxy_read_timeout  86400;
+  }
 
-
-    listen [::]:443 ssl;
-    listen 443 ssl;
-    ssl_certificate /etc/letsencrypt/live/seed.aharoni-lab.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/seed.aharoni-lab.com/privkey.pem;
-    include /etc/letsencrypt/options-ssl-nginx.conf;
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+  listen [::]:443 ssl;
+  listen 443 ssl;
+  ssl_certificate /etc/letsencrypt/live/seed.aharoni-lab.com/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/seed.aharoni-lab.com/privkey.pem;
+  include /etc/letsencrypt/options-ssl-nginx.conf;
+  ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
 }
 server {
-    if ($host = seed.aharoni-lab.com) {
-        return 301 https://$host$request_uri;
-    }
+  if ($host = seed.aharoni-lab.com) {
+      return 301 https://$host$request_uri;
+  }
 
-
-   server_name seed.aharoni-lab.com;
-   listen 80;
-   listen [::]:80;
-   return 404;
+  server_name seed.aharoni-lab.com;
+  listen 80;
+  listen [::]:80;
+  return 404;
 }
-
-
-````
-````{div} flex-col
-````
-`````
+```

@@ -1,3 +1,3 @@
 # Architecture
 
-(Overview of how it works)
+(it's a client/server web app)
