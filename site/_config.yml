@@ -37,6 +37,10 @@ include:
   - 2023-08-03_earthseed/_sphinx_design_static
   - 2023-08-03_earthseed/_static
 
+keep_files:
+  - 2023-08-03_earthseed
+
+
 # Exclude from processing.
 # The following items will not be processed, by default.
 # Any item listed under the `exclude:` key here will be automatically added to
