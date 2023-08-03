@@ -38,7 +38,7 @@ include:
   - 2023-08-03_earthseed/_static
 
 keep_files:
-  - 2023-08-03_earthseed
+  - 2023-08-03_earthseed/
 
 
 # Exclude from processing.
