@@ -7,6 +7,9 @@ parts:
   - caption: 1. The Dawn of Earthseed
     chapters:
       - file: 01_dawn/it
+        sections:
+          - file: 01_dawn/it-uoit
+          - file: 01_dawn/it-ucla
       - file: 01_dawn/rproxy
       - file: 01_dawn/ansible
   - caption: 2. A Golden Age of Web Services
