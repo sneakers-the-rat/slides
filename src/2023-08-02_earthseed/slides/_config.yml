@@ -41,7 +41,7 @@ parse:
 sphinx:
   config:
     html_static_path: ["_static"]
-    html_css_files: ["custom.css"]
+    html_css_files: ["custom.css"] 
     html_baseurl: https://jon-e.net/slides/2023-08-03_earthseed
   extra_extensions:
     - sphinxcontrib.video
