@@ -38,6 +38,10 @@ include:
   - 2023-08-03_earthseed/_sphinx_design_static
   - 2023-08-03_earthseed/_static
   - "2023-08-03_earthseed/**/*"
+  - "earthseed/_images"
+  - "earthseed/_sphinx_design_static"
+  - "earthseed/_static"
+  - "earthseed/**/*"
 
 keep_files: ["2023-08-03_earthseed/", "2023-08-03_earthseed/**/*", "earthseed", "earthseed/**/*"]
 
