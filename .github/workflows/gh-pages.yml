@@ -168,17 +168,17 @@ jobs:
           name: slides-artifact-1
           path: site/2023-04-13_lab-meeting/
 
-      - name: Download Slides Artifact 2
-        uses: actions/download-artifact@v3
-        with:
-          name: slides-artifact-2
-          path: site/2023-05-11_lab-meeting/
-
-      # - name: Download Slides Artifact 3
+      # - name: Download Slides Artifact 2
       #   uses: actions/download-artifact@v3
       #   with:
-      #     name: slides-artifact-3
-      #     path: dist/earthseed/
+      #     name: slides-artifact-2
+      #     path: site/2023-05-11_lab-meeting/
+
+      - name: Download Slides Artifact 3
+        uses: actions/download-artifact@v3
+        with:
+          name: slides-artifact-3
+          path: dist/earthseed/
 
       - name: Download Slides Artifact 3 again bc jekyll is ridiculous
         uses: actions/download-artifact@v3

@@ -26,7 +26,7 @@ baseurl: "/slides" # the subpath of your site, e.g. /blog
 url: "https://jon-e.net" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: json_dirs
 github_username:  sneakers-the-rat
-destination: dist/
+destination: dist
 
 # Build settings
 theme: minima
@@ -43,7 +43,7 @@ include:
   - "earthseed/_static"
   - "earthseed/**/*"
 
-keep_files: ["2023-08-03_earthseed/", "2023-08-03_earthseed/**/*", "earthseed", "earthseed/**/*"]
+keep_files: ["2023-08-03_earthseed/", "2023-08-03_earthseed/**/*", "earthseed/", "earthseed/**/*"]
 
 
 # Exclude from processing.
