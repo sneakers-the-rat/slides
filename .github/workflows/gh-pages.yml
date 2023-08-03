@@ -154,6 +154,10 @@ jobs:
       - slides3
 
     steps:
+      - name: install tree
+        run: |
+          sudo apt update
+          sudo apt install tree
       - uses: actions/checkout@v3
       - name: Jekyll Cache
         uses: actions/cache@v3
@@ -180,11 +184,14 @@ jobs:
           name: slides-artifact-3
           path: dist/earthseed/
 
-      - name: Download Slides Artifact 3 again bc jekyll is ridiculous
-        uses: actions/download-artifact@v3
-        with:
-          name: slides-artifact-3
-          path: site/earthseed/
+      - name: run tree 1
+        run: tree ./
+
+      # - name: Download Slides Artifact 3 again bc jekyll is ridiculous
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: slides-artifact-3
+      #     path: site/earthseed/
           # Use GitHub Actions' cache to shorten build times and decrease load on servers
       - uses: helaili/jekyll-action@2.4.0    # Choose any one of the Jekyll Actions
         with:                                # Some relative inputs of your action
@@ -192,3 +199,6 @@ jobs:
           jekyll_src: "site"
           build_dir: "dist"
           target_branch: 'gh-pages'
+
+      - name: run tree 2
+        run: tree ./
