@@ -14,11 +14,16 @@ release = "0.0.1"
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ["myst_parser", "sphinx_design", "sphinxcontrib.mermaid"]
+extensions = [
+    "myst_parser",
+    "sphinx_design",
+    "sphinxcontrib.bibtex",
+    "sphinxcontrib.mermaid",
+]
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
-
+bibtex_bibfiles = ["2024-03-27.bib"]
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
@@ -27,6 +32,7 @@ html_theme = "furo"
 html_static_path = ["_static"]
 html_css_files = ["main.css"]
 html_js_files = ["keys.js"]
+html_title = "2024-03-27:<br>LinkML Arrays"
 
 html_baseurl = "/slides/2024-03-27_linkml-arrays"
 pygments_dark_style = "github-dark"
