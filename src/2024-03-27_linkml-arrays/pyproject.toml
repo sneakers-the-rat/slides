@@ -1,0 +1,60 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "2024-03-27-linkml-arrays"
+version = "0.0.1"
+description = ''
+readme = "README.md"
+requires-python = ">=3.8"
+license = "CC-BY-SA-4.0"
+keywords = []
+authors = [
+  { name = "sneakers-the-rat", email = "sneakers-the-rat@protonmail.com" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = [
+  "black",
+  "furo==2024.1.29",
+  "sphinx-autobuild==2024.2.4",
+  "Sphinx==7.2.6",
+  "myst-parser==2.0.0",
+  "sphinx-design==0.5.0",
+  "sphinxcontrib-mermaid==0.9.2"
+]
+
+[project.urls]
+Source = "https://github.com/unknown/2024-03-27-linkml-arrays"
+
+
+[tool.hatch.envs.default]
+
+[tool.hatch.envs.default.scripts]
+test = "pytest {args:tests}"
+test-cov = "coverage run -m pytest {args:tests}"
+cov-report = [
+  "- coverage combine",
+  "coverage report",
+]
+cov = [
+  "test-cov",
+  "cov-report",
+]
+
+[[tool.hatch.envs.all.matrix]]
+python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
+
+[tool.hatch.build.targets.wheel]
+bypass-selection = true
+
