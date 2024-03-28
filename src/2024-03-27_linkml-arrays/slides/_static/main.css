@@ -1,0 +1,12 @@
+.sidebar-drawer {
+    width: unset;
+}
+
+.main > .content {
+    width: unset;
+    flex-grow: 1;
+}
+
+.toc-drawer {
+    min-width: 15em;
+}

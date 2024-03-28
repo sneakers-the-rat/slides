@@ -26,6 +26,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 html_theme = "furo"
 html_static_path = ["_static"]
 html_css_files = ["main.css"]
+html_js_files = ["keys.js"]
 
 html_baseurl = "/slides/2024-03-27_linkml-arrays"
 pygments_dark_style = "github-dark"
