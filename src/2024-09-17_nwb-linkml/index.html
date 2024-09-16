@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>NWB in LinkML - Lab Meeting 2024-09-16</title>
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/index.css">
+		<link rel="stylesheet" href="dist/theme/black.css">
+
+		<!-- Theme used for syntax highlighted code -->
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section data-markdown>
+					<textarea data-template>
+						# NWB in Linkml
+
+						## Background
+
+						- NWB in context: BIDS, SPARC, NIX, etc.
+						- Modeling paradigms: Hierarchical, Relational, RDF-like
+						- Design Requirements
+
+						## Implementation
+						- Overview
+							- Repo structure, diagram, etc.
+						- NWB -> LinkML
+						- LinkML -> Pydantic
+						- Numpydantic
+						- Loading
+						- Data format & Markup
+
+						## Integration
+
+						- Re: Rest of lab projects...
+						- Custom schemas & import syntax
+						- Towards p2p...
+					</textarea>
+				</section>
+				<section>
+					<h2>What do we want from a data format?</h2>
+					<p>Yeah sure, FAIR, but specifically...</p>
+					<div class="row">
+						<div class="column half">
+							<h3>For Producers</h3>
+							<ul class="fragment">
+								<li>Easy to understand</li>
+								<li>Easy to convert to</li>
+								<li>Integrates with existing practices</li>
+								<li>Extensible: accomodates all experimental details</li>
+								<li>Evolvable: versionable, iteratively add multiple phases of experiment</li>
+								<li>Low-risk: difficult to lose data from e.g. corruption</li>
+								<li>Efficient: doesn't duplicate data, uses compression kindly</li>
+							</ul>
+						</div>
+						<div class="column">
+							<h3>For Consumers</h3>
+							<ul class="fragment">
+								<li>Easy to find and index</li>
+								<li>Uses standardized vocabularies</li>
+								<li>Interoperable with other formats</li>
+								<li>High-performance: query large amounts of data</li>
+								<li>Good UX for common data types: arrays, tables, etc.</li>
+								<li>Streamable: don't need 1TB file to access 1MB of data</li>
+							</ul>
+						</div>
+					</div>
+
+				</section>
+				<section>
+					<h2>How do neuroscientists store their data?</h2>
+
+					Aside from "a bunch of random .mat files"
+
+
+				</section>
+				<section>Slide 2</section>
+			</div>
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script src="plugin/menu/menu.js"></script>
+		<script src="plugin/reveald3/reveald3.js"></script>
+		<script>
+			// More info about initialization & config:
+			// - https://revealjs.com/initialization/
+			// - https://revealjs.com/config/
+			Reveal.initialize({
+				hash: true,
+				transition: 'fade',
+				transitionSpeed: 'fast',
+				disableLayout: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes, RevealMenu, Reveald3 ]
+			});
+		</script>
+	</body>
+</html>

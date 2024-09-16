@@ -1,0 +1,28 @@
+$container-padding: 1em;
+$breakpoint-med: 1000px;
+
+.reveal .slides {
+
+  & > section {
+    box-sizing: border-box;
+    padding: $container-padding;
+
+    .row {
+      display: flex;
+      flex-direction: row;
+      @media (max-width: $breakpoint-med){
+        flex-wrap: wrap;
+      }
+      width: 100%;
+    }
+
+    .column {
+      flex-grow: 1;
+
+      &.half {
+        max-width: 50%;
+      }
+    }
+  }
+}
+
