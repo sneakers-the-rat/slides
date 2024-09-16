@@ -23,6 +23,11 @@ stateDiagram-v2
     schb --> imports
     imports --> Schema
     Generators --> Pythongen
+    Generators --> Pydantic
+    Generators --> SQL
+    Generators --> RDF
+    Generators --> JSONSchema
+    Generators --> etc
     Pythongen --> Metamodel: Self-defining
 
     class scha dotted
