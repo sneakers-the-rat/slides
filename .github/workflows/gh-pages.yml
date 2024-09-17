@@ -34,27 +34,18 @@ jobs:
   slides:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-      - name: Yarn cache
-        uses: actions/cache@v3
-        id: yarn-cache
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarnv1-${{ hashFiles('./src/2023-04-13_lab-meeting/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarnv1-
+          cache: yarn
+          cache-dependency-path: ./src/2023-04-13_lab-meeting/yarn.lock
       - name: Install Yarn Dependencies
         run: yarn install --frozen-lockfile
         working-directory: src/2023-04-13_lab-meeting
       - name: Slides cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: slides-cache
         with:
           path: src/2023-04-13_lab-meeting/dist
@@ -66,7 +57,7 @@ jobs:
         run: npm run build
         working-directory: src/2023-04-13_lab-meeting
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: slides-artifact-1
           path: src/2023-04-13_lab-meeting/dist/
@@ -74,27 +65,18 @@ jobs:
   slides2:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-      - name: Yarn cache
-        uses: actions/cache@v3
-        id: yarn-cache
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarnv1-${{ hashFiles('./src/2023-05-11_lab-meeting/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarnv1-
+          cache: 'yarn'
+          cache-dependency-path: ./src/2023-05-11_lab-meeting/yarn.lock
       - name: Install Yarn Dependencies
         run: yarn install --frozen-lockfile
         working-directory: src/2023-05-11_lab-meeting
       - name: Slides cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: slides-cache
         with:
           path: src/2023-05-11_lab-meeting/dist
@@ -106,7 +88,7 @@ jobs:
         run: npm run build
         working-directory: src/2023-05-11_lab-meeting
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: slides-artifact-2
           path: src/2023-05-11_lab-meeting/dist/
@@ -114,13 +96,14 @@ jobs:
   slides3:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       # Install dependencies
       - name: Set up Python 3.11
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: 3.11
+          cache: 'pip'
 
       - name: Install dependencies
         working-directory: src/2023-08-02_earthseed/
@@ -128,7 +111,7 @@ jobs:
           pip install .
 
       - name: Slides cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: slides-cache-3
         with:
           path: src/2023-08-02_earthseed/dist
@@ -143,7 +126,7 @@ jobs:
           jupyter-book build slides/ --path-output dist/
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: slides-artifact-3
           path: src/2023-08-02_earthseed/dist/_build/html
@@ -151,9 +134,9 @@ jobs:
   slides4:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Slides cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: slides-cache
         with:
           path: src/2024-09-17_nwb-linkml/dist
@@ -179,7 +162,7 @@ jobs:
         run: yarn run build
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: slides-artifact-4
           path: src/2024-09-17_nwb-linkml/dist/
