@@ -7,11 +7,21 @@ span {
   }
 }
 
-.reveal h2.emphasis {
+.smaller {
+  font-size: 0.8em;
+  line-height: 0.8em;
+}
+
+.reveal h2.emphasis,
+.reveal p.emphasis {
   color: $accentColor;
   font-style: italic;
   font-size: 3em;
   animation: flicker 2s infinite;
+}
+
+ul li strong {
+  text-decoration: underline;
 }
 
 @keyframes flicker {

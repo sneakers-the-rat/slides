@@ -289,8 +289,582 @@ sub-epilepsy01	10	f		r
 </section>
 <section>
 	<h2><code>nwb-linkml</code> overview</h2>
-
+	<div class="fullscreen">
+		<img src="img/nwb-linkml-diagram.svg">
+	</div>
 </section>
+<section data-markdown>
+	<textarea data-template>
+		# Trials and tribulations
+
+		- resolving imports
+		- rolling down classes
+		- nonlocal/multilevel class effects
+		- emulating all the hdmf special cases
+		- resolving intra-file references
+
+	</textarea>
+</section>
+<section>
+	<section>
+	<div class="row">
+		<div class="column half">
+			<h2>problem 1: NWB doesn't specify version dependencies.</h2>
+			<p>
+				The only place this information is found is in the git submodule version of the nwb-core repo<br>
+				pynwb also <a href="https://github.com/hdmf-dev/hdmf/issues/1098">breaks schema versions</a> because of the
+				<a href="https://github.com/NeurodataWithoutBorders/pynwb/pull/1931">brittle global namespace system</a>
+			</p>
+			<pre>
+				<code data-trim data-line-numbers="5,6" class="language-yaml">
+namespaces:
+- name: core
+# ...
+  schema:
+	# who is she
+	- namespace: hdmf-common
+	- doc: This source module contains base data types used throughout the NWB data format.
+    source: nwb.base.yaml
+    title: Base data types
+				</code>
+			</pre>
+		</div>
+		<div class="column half fragment">
+			So we make an interface to git
+			<pre><code data-trim>
+>>> repo = GitRepo(NWB_CORE_REPO)
+>>> repo.clone()
+>>> # Check out a tag specifically
+>>> repo.tag = "2.6.0"
+>>> repo.tag
+'2.6.0'
+>>> # Now check out a commit some number after the tag.
+>>> repo.commit = "ec0a879"
+>>> repo.tag
+'2.6.0-5-gec0a879'
+>>> # Get the namespace file
+>>> repo.namespace_file
+'/var/tmp/some_hash/nwb_linkml__cache/git/core/nwb.namespace.yaml'
+			</code></pre>
+			And since parsing yaml is expensive, we peek with regex for the version...
+<pre><code data-trim data-noescape>
+def yaml_peek(
+		key: str, path: Union[str, Path], root: bool = True, first: bool = True
+) -> Union[str, List[str]]:
+		if root:
+        pattern = re.compile(rf"^(?P<key>{key}):\s*(?P<value>\S.*)")
+    else:
+        pattern = re.compile(rf"^\s*(?P<key>{key}):\s*(?P<value>\S.*)")
+		# ...
+		with open(path) as yfile:
+				for line in yfile:
+						res = pattern.match(line)
+						if res:
+								break
+        if res:
+            return res.groupdict()["value"]
+</code></pre>
+		</div>
+	</div>
+	</section>
+	<section>
+		<div class="row">
+			<div class="column half">
+				<h2>Caching by Virtualizing Imports</h2>
+				<p>
+					pynwb is tied to a single version of <code>nwb-schema</code>.<br>
+					We want to provide all versions of all schemas.<br>
+					Coincidentally, we also need to cache a lot.<br>
+					So we use .env to make a relocatable cache...
+				<pre>
+__tmp__
+├── git
+│   ├── core
+│   └── hdmf-common
+├── linkml
+│   ├── core
+│   │   ├── ...
+│   │   ├── v2_6_0_alpha
+│   │   └── v2_7_0
+│   ├── hdmf_common
+│   │   ├── v1_5_0
+│   │   └── v1_8_0
+├── logs
+└── pydantic
+    ├── core
+    │   ├── ...
+    │   ├── v2_6_0_alpha
+    │   └── v2_7_0
+    ├── hdmf_common
+    │   ├── ...
+    │   ├── v1_5_0
+    │   └── v1_8_0
+		</pre>
+
+				</p>
+			</div>
+			<div class="column half">
+				And <a href="https://docs.python.org/3/library/importlib.html#importlib.abc.MetaPathFinder">patch into the python import machinery</a> so a model can be imported from the cache as if it's a normal python module
+				<pre><code data-trim>
+from importlib.abc import MetaPathFinder
+
+class EctopicModelFinder(MetaPathFinder):
+		MODEL_STEM = "nwb_models.models.pydantic"
+
+		def __init__(self, path: Path, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.path = path
+
+		def find_spec(
+        self, fullname: str,
+				path: Optional[str],
+				target: Optional[ModuleType] = None
+    ) -> Optional[ModuleSpec]:
+        """
+				If we are loading a generated pydantic module,
+				return an importlib spec
+				"""
+        if not fullname.startswith(self.MODEL_STEM):
+            return None
+        else:
+            # get submodule beneath model stem
+            submod = fullname.replace(self.MODEL_STEM, "").lstrip(".")
+            base_path = Path(self.path, *submod.split("."))
+
+				# ...
+				spec = importlib.util.spec_from_file_location(fullname, import_path)
+				return spec
+			</code></pre>
+			</div>
+		</div>
+	</section>
+</section>
+<section>
+	<div class="row">
+		<div class="column half">
+			<h2>Brief Refresher on NWB structure</h2>
+			<p>NWB schemas have...</p>
+			<ul>
+				<li><strong>namespaces</strong> - collections of multiple schema files, each of which contains...</li>
+				<li><strong>groups</strong> - which can contain groups, datasets, an attributes</li>
+				<li><strong>datasets</strong> - which are the "leaves" of a schema, actually specifying array data</li>
+				<li><strong>attributes</strong> - simple scalar metadata values</li>
+			</ul>
+
+		</div>
+		<div class="column half">
+			<p>eg. the TimeSeries group (abbreviated)</p>
+			<pre><code class="language-yaml" data-line-numbers="4-6|8-17|13-17|18-27|28-30" data-trim>
+- neurodata_type_def: TimeSeries
+  neurodata_type_inc: NWBDataInterface
+  doc: General purpose time series.
+  attributes:
+  - name: description
+    dtype: text
+  datasets:
+  - name: data
+    dims:
+    - num_times
+    shape:
+    - null
+    attributes:
+    - name: conversion
+      dtype: float32
+    - name: unit
+      dtype: text
+  - name: timestamps
+    dtype: float64
+    dims:
+    - num_times
+    shape:
+    - null
+    quantity: '?'
+    attributes:
+    - name: interval
+    - name: unit
+	group:
+  - name: sync
+    quantity: '?'
+
+			</code></pre>
+		</div>
+	</div>
+</section>
+
+<section>
+	<section>
+	<div class="row">
+		<div class="column half">
+			<h2>problem 2: nwb's inheritance is whacky</h2>
+			<p>NWB's inheritance system mixes inheritance with object instantiation...</p>
+			<table class="docutils align-default smaller">
+				<thead>
+				<tr class="row-odd"><th class="head"><p><code class="docutils literal notranslate"><span class="pre">type_inc</span></code></p></th>
+					<th class="head"><p><code class="docutils literal notranslate"><span class="pre">type_def</span></code></p></th>
+					<th class="head"><p>Description</p></th>
+				</tr>
+				</thead>
+				<tbody>
+				<tr class="row-even"><td><p>not set</p></td>
+					<td><p>not set</p></td>
+					<td><p>define a standard dataset or group without a type</p></td>
+				</tr>
+				<tr class="row-odd"><td><p>not set</p></td>
+					<td><p>set</p></td>
+					<td><p>create a new data type from scratch</p></td>
+				</tr>
+				<tr class="row-even"><td><p>set</p></td>
+					<td><p>not set</p></td>
+					<td><p>include (reuse) data type without creating a new one (include)</p></td>
+				</tr>
+				<tr class="row-odd"><td><p>set</p></td>
+					<td><p>set</p></td>
+					<td><p>merge/extend data type and create a new type (inheritance/merge)</p></td>
+				</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="column half">
+			<p>And inheritance is <a href="https://github.com/NeurodataWithoutBorders/pynwb/issues/1954#issuecomment-2327718036">recursively merged</a>, rather than simply overridden</p>
+			<pre><code data-trim class="language-python" data-line-numbers>
+@dataclass
+class TimeSeries:
+    data: 'Data'
+    timestamps: list[float]
+
+    @dataclass
+    class Data:
+        conversion: float = 1.0
+        offset: float = 0.0
+        resolution: float = -1.0
+        unit: str
+
+@dataclass
+class VoltageClampStimulusSeries(TimeSeries):
+    data: 'Data'
+    # we expect to have the rest of the top-level fields
+		# like timestamps here from inheritance
+
+    @dataclass
+    class Data:
+        unit: str = "float"
+        # because `Data` is defined locally
+				# within TimeSeries and VoltageClampStimulusSeries,
+        # we wouldn't expect to inherit `conversion`, etc.
+				# props, and yet in nwb we do.
+			</code></pre>
+		</div>
+	</div>
+	</section>
+	<section>
+		<div class="row">
+			<div class="column third">
+				<p>Thankfully we made reasonable (linkml) data models to represent nwb-schema-language</p>
+				<pre><code data-trim class="language-python">
+class Group(ConfiguredBaseModel):
+
+    neurodata_type_def: Optional[str] = Field(
+        None,
+        description="""Used alongside neurodata_type_inc to indicate inheritance, naming, and mixins""",
+    )
+    neurodata_type_inc: Optional[str] = Field(
+        None,
+        description="""Used alongside neurodata_type_def to indicate inheritance, naming, and mixins""",
+    )
+    name: Optional[str] = Field(None)
+    default_name: Optional[str] = Field(None)
+    doc: str = Field(..., description="""Description of corresponding object.""")
+    quantity: Optional[Union[QuantityEnum, int]] = Field(1)
+    linkable: Optional[bool] = Field(None)
+    attributes: Optional[List[Attribute]] = Field(default_factory=list)
+    datasets: Optional[List[Dataset]] = Field(default_factory=list)
+    groups: Optional[List[Group]] = Field(default_factory=list)
+    links: Optional[List[Link]] = Field(default_factory=list)
+				</code></pre>
+			</div>
+			<div class="column twothirds">
+				<p>So we can recursively roll down inheriting class props</p>
+				<pre><code data-trim class="language-python" data-line-numbers="5-6|8-10|11-17|18-30|19-21|22-30">
+def roll_down_nwb_class(
+	source: Group | Dataset | dict, target: Group | Dataset | dict,
+	complete: bool = False
+) -> dict:
+	# don't copy every property, just those that the child touches
+	ret = {k: v for k, v in source.items() if k not in exclude and k in target}
+	for key, value in target.items():
+		if key not in ret:
+			# straight through if the child overwrites a scalar value
+			ret[key] = value
+		elif isinstance(value, dict):
+			# merge if the child is itself a dataset, group, or attr
+			# children get `complete`ly merged, while top-level classes don't
+			if key in ret:
+				ret[key] = roll_down_nwb_class(ret[key], value, complete=True)
+			else:
+				ret[key] = value
+		elif isinstance(value, list) and all([isinstance(v, dict) for v in value]):
+			# we have to match lists of datasets/groups by the name key...
+			src_keys = {v["name"]: ret[key].index(v) for v in ret.get(key, {}) if "name" in v}
+			target_keys = {v["name"]: value.index(v) for v in value if "name" in v}
+			# ... merge dicts in both source and target
+			new_val.extend(
+				[
+					roll_down_nwb_class(ret[key][src_keys[k]], value[target_keys[k]], complete=True)
+					for k in target_keys
+					if k in set(src_keys.keys()).intersection(set(target_keys.keys()))
+				]
+			)
+			ret[key] = new_val
+		else:
+			ret[key] = value
+				</code></pre>
+			</div>
+		</div>
+	</section>
+	<section>
+		<p>(in pynwb this is a manual process, and it often defies the schema)</p>
+		<p>note how unit is overridden for VoltageClampStimulusSeries.attributes, <br>
+		when in the schema it is overridden for VoltageClampStimulusSeries.data.attributes</p>
+		<div class="row">
+			<div class="column half"><pre><code data-trim class="language-yaml">
+- neurodata_type_def: VoltageClampStimulusSeries
+  neurodata_type_inc: PatchClampSeries
+  doc: Stimulus voltage applied during a voltage clamp recording.
+  datasets:
+  - name: data
+    doc: Stimulus voltage applied.
+    attributes:
+    - name: unit
+      dtype: text
+      value: volts
+      doc: Base unit of measurement for working with the data. which is fixed to 'volts'.
+        Actual stored values are not necessarily stored in these units. To access the data in these units,
+        multiply 'data' by 'conversion' and add 'offset'.
+			</code></pre></div>
+			<div class="column half">
+				<pre><code data-trim class="language-python">
+@register_class('VoltageClampStimulusSeries', CORE_NAMESPACE)
+class VoltageClampStimulusSeries(PatchClampSeries):
+    '''
+    Alias to standard PatchClampSeries. Its functionality is to better tag PatchClampSeries for
+    machine (and human) readability of the file.
+    '''
+
+    __nwbfields__ = ()
+
+    @docval(*get_docval(PatchClampSeries.__init__, 'name', 'data', 'electrode', 'gain'),  # required
+			{
+				'name': 'unit',
+			  'type': str,
+			  'doc': "The base unit of measurement (must be 'volts')",
+			  'default': 'volts'
+			}
+		)
+    def __init__(self, **kwargs):
+        name, data, unit, electrode, gain = popargs('name', 'data', 'unit', 'electrode', 'gain', kwargs)
+        unit = ensure_unit(self, name, unit, 'volts', '2.1.0')
+        super().__init__(name, data, unit, electrode, gain, **kwargs)
+				</code></pre>
+			</div>
+		</div>
+	</section>
+</section>
+<section>
+	<section>
+	<h2>problem 3: nwb -> linkml translation is nonlocal in nwb</h2>
+	<p>We want to create simple models, so...</p>
+	<ul>
+		<li>Yield a new class when a dataset has additional attributes</li>
+		<li>Yield only a model field it captures the full dataset description</li>
+	</ul>
+	<div class="row">
+		<div class="column half">
+<pre><code data-trim class="language-yaml">
+groups:
+- neurodata_type_def: ImageSeries
+  neurodata_type_inc: TimeSeries
+  datasets:
+  - name: data
+    dtype: numeric
+    dims:
+    - - frame
+      - x
+      - y
+    shape:
+    - - null
+      - null
+      - null
+  - name: external_file
+    dtype: text
+    dims:
+    - num_files
+    shape:
+    - null
+    attributes:
+    - name: starting_frame
+      dtype: int32
+</code></pre>
+		</div>
+		<div class="column half">
+			<pre><code class="language-python">
+class ImageSeries(TimeSeries):
+	data: NDArray[Shape["* frame, * x, * y"], float]
+	external_file: Optional[ImageSeriesExternalFile] = None
+
+class ImageSeriesExternalFile(ConfiguredBaseModel):
+	value: Optional[NDArray[Shape["* num_files"], str]] = None
+	starting_frame: List[int]
+
+			</code></pre>
+		</div>
+	</div>
+	</section>
+	<section>
+
+		<div class="row">
+			<div class="column third">
+				<h2>So we make a nonlocal build system</h2>
+				<ul>
+					<li>Make a container for build results</li>
+					<li>Build stages check for applicability</li>
+					<li>Then receive and return the modified build result</li>
+					<li>for ... bidirectional recursion?</li>
+				</ul>
+				<pre><code data-trim class="language-python">
+@dataclass
+class BuildResult:
+    """
+    Container class for propagating nested build results back up to caller
+    """
+
+    schemas: List[SchemaDefinition]
+    classes: List[ClassDefinition]
+    slots: List[SlotDefinition]
+    types: List[TypeDefinition]
+				</code></pre>
+			</div>
+			<div class="column twothirds">
+				<pre><code data-trim class="language-python" data-line-numbers="8-16|24-27">
+class MapArraylike(DatasetMap):
+	def apply(
+		c, cls: Dataset, res: Optional[BuildResult] = None, name: Optional[str] = None
+	) -> BuildResult:
+		array_adapter = ArrayAdapter(cls.dims, cls.shape)
+		expressions = array_adapter.make_slot()
+		name = camel_to_snake(cls.name)
+		res = BuildResult(
+			slots=[
+				SlotDefinition(
+						name=name,
+						range=handle_dtype(cls.dtype),
+						required=cls.quantity not in ("*", "?"),
+						**expressions,
+					)])
+		return res
+
+class MapArrayLikeAttributes(DatasetMap):
+	def apply(
+		c, cls: Dataset, res: Optional[BuildResult] = None, name: Optional[str] = None
+	) -> BuildResult:
+		array_adapter = ArrayAdapter(cls.dims, cls.shape)
+		expressions = array_adapter.make_slot()
+		array_slot = SlotDefinition(
+				name="value", range=handle_dtype(cls.dtype), inlined=inlined(cls.dtype), **expressions
+		)
+		res.classes[0].attributes.update({"value": array_slot})
+		return res
+				</code>
+				</pre>
+			</div>
+		</div>
+	</section>
+	<section>
+Where every class builds a class for itself (if needed) and a slot that
+its parent uses to refer to it
+<pre><code class="language-python" data-trim>
+def build_base(self) -> BuildResult:
+	# ...
+	cls = ClassDefinition(**kwargs)
+
+	slots = []
+	if self.parent is not None:
+			slots.append(self.build_self_slot())
+
+	return BuildResult(classes=[cls], slots=slots)
+</code></pre>
+		Then merge the results as they ascend the recursive chain with an addition metaphor
+		<pre><code class="language-python" data-trim>
+Class GroupAdapter(ClassAdapter):
+	def build_subclasses(self) -> BuildResult:
+		"""
+		Build nested groups and datasets
+
+		Create ClassDefinitions for each, but then also create SlotDefinitions that
+		will be used as attributes linking the main class to the subclasses
+		"""
+		# Datasets are simple, they are terminal classes, and all logic
+		# for creating slots vs. classes is handled by the adapter class
+		dataset_res = BuildResult()
+		for dset in self.cls.datasets:
+				dset_adapter = DatasetAdapter(cls=dset, parent=self)
+				dataset_res += dset_adapter.build()
+
+		</code></pre>
+
+	</section>
+</section>
+<section class="center">
+	<p>so great, we have schemas, what's the ...</p>
+
+	<p class="fragment">o shit is that....</p>
+
+	<p class="fragment emphasis">enough special cases <br>to blot out the sun</p>
+
+	<div class="row">
+		<div class="column half"></div>
+		<div class="column half"></div>
+	</div>
+</section>
+<section>
+	<div class="r-stack">
+		<div>
+		<h2>problem 4: most of nwb is implemented as special-cased classes that only exist in words in the schema</h2>
+		So ya got
+		<ul>
+			<li><strong>DynamicTable:</strong> an unbounded set of user-specifiable, extra-schema columns, which are...</li>
+			<li><strong>VectorData:</strong> A column of data within a DynamicTable that can also have a...</li>
+			<li><strong>VectorIndex:</strong> Another column of indices that turn a VectorData column into a ragged-length array</li>
+			<li><strong>DynamicTableRegion:</strong> A subclass of VectorData with a reference to another table, which makes it both a vector of table rows AND a ragged array of table rows</li>
+			<li><strong>AlignedDynamicTable:</strong> A subclass of DynamicTable which can contain multiple tables with matching <code>id</code> columns</code></li>
+			<li><strong>TimeSeriesReferenceVectorData:</strong> A subclass of VectorData that can refer to arbitrary ranges within a TimeSeries dataset, which can have a VectorIndex making it a ragged array of arbitrary ranges of a TimeSeries</li>
+		</ul>
+		</div>
+		<img class="fragment" src="img/jesus.png">
+	</div>
+</section>
+
+				<section>
+					<div class="row">
+						<div class="column half"></div>
+						<div class="column half"></div>
+					</div>
+				</section>
+
+				<section>
+					<div class="row">
+						<div class="column half"></div>
+						<div class="column half"></div>
+					</div>
+				</section>
+				<section>
+					<div class="row">
+						<div class="column half"></div>
+						<div class="column half"></div>
+					</div>
+				</section>
+
+
+
 			</div>
 		</div>
 
@@ -310,6 +884,13 @@ sub-epilepsy01	10	f		r
 				transition: 'fade',
 				transitionSpeed: 'fast',
 				disableLayout: true,
+
+				mermaid: {
+					htmlLabels: false,
+					flowchart: {
+						padding: 30
+					}
+				},
 
 				// Learn about plugins: https://revealjs.com/plugins/
 				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes, RevealMenu, Reveald3, RevealMermaid ]
