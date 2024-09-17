@@ -194,28 +194,28 @@ jobs:
           working-directory: site
 
       - name: Download Slides Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: slides-artifact-1
           path: site/2023-04-13_lab-meeting/
 
       - name: Download Slides Artifact 2
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: slides-artifact-2
           path: site/2023-05-11_lab-meeting/
 
       - name: Download Slides Artifact 3
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: slides-artifact-3
-          path: _site/2023-08-03_earthseed/
+          path: site/2023-08-03_earthseed/
 
       - name: Download Slides Artifact 4
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: slides-artifact-4
-          path: _site/2024-09-17_nwb-linkml/
+          path: site/2024-09-17_nwb-linkml/
 
       - name: run tree 1
         run: tree ./
