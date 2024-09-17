@@ -8,7 +8,6 @@
 
 		<link rel="stylesheet" href="dist/reset.css">
 		<link rel="stylesheet" href="dist/index.css">
-		<link rel="stylesheet" href="dist/theme/black.css">
 
 		<!-- Theme used for syntax highlighted code -->
 		<link rel="stylesheet" href="plugin/highlight/monokai.css">
@@ -16,70 +15,282 @@
 	<body>
 		<div class="reveal">
 			<div class="slides">
-				<section data-markdown>
-					<textarea data-template>
-						# NWB in Linkml
+<section data-markdown>
+	<textarea data-template>
+		# NWB in Linkml
 
-						## Background
+		## Background
 
-						- NWB in context: BIDS, SPARC, NIX, etc.
-						- Modeling paradigms: Hierarchical, Relational, RDF-like
-						- Design Requirements
+		- Design Requirements
+		- Modeling paradigms: Hierarchical, Relational, RDF-like
 
-						## Implementation
-						- Overview
-							- Repo structure, diagram, etc.
-						- NWB -> LinkML
-						- LinkML -> Pydantic
-						- Numpydantic
-						- Loading
-						- Data format & Markup
+		## Implementation
+		- Overview
+			- Repo structure, diagram, etc.
+		- NWB -> LinkML
+		- LinkML -> Pydantic
+		- Numpydantic
+		- Loading
+		- Data format & Markup
 
-						## Integration
+		## Integration
 
-						- Re: Rest of lab projects...
-						- Custom schemas & import syntax
-						- Towards p2p...
-					</textarea>
-				</section>
-				<section>
-					<h2>What do we want from a data format?</h2>
-					<p>Yeah sure, FAIR, but specifically...</p>
-					<div class="row">
-						<div class="column half">
-							<h3>For Producers</h3>
-							<ul class="fragment">
-								<li>Easy to understand</li>
-								<li>Easy to convert to</li>
-								<li>Integrates with existing practices</li>
-								<li>Extensible: accomodates all experimental details</li>
-								<li>Evolvable: versionable, iteratively add multiple phases of experiment</li>
-								<li>Low-risk: difficult to lose data from e.g. corruption</li>
-								<li>Efficient: doesn't duplicate data, uses compression kindly</li>
-							</ul>
-						</div>
-						<div class="column">
-							<h3>For Consumers</h3>
-							<ul class="fragment">
-								<li>Easy to find and index</li>
-								<li>Uses standardized vocabularies</li>
-								<li>Interoperable with other formats</li>
-								<li>High-performance: query large amounts of data</li>
-								<li>Good UX for common data types: arrays, tables, etc.</li>
-								<li>Streamable: don't need 1TB file to access 1MB of data</li>
-							</ul>
-						</div>
-					</div>
+		- Re: Rest of lab projects...
+		- Custom schemas & import syntax
+		- Towards p2p...
+	</textarea>
+</section>
+<section>
+	<h2>What do we want from a data format?</h2>
+	<p>Yeah sure, FAIR, but specifically...</p>
+	<div class="row">
+		<div class="column half">
+			<h3>For Producers</h3>
+			<ul class="fragment">
+				<li>Easy to understand</li>
+				<li>Easy to convert to</li>
+				<li>Integrates with existing practices</li>
+				<li>Extensible: accomodates all experimental details</li>
+				<li>Evolvable: versionable, iteratively add multiple phases of experiment</li>
+				<li>Low-risk: difficult to lose data from e.g. corruption</li>
+				<li>Efficient: doesn't duplicate data, uses compression kindly</li>
+			</ul>
+		</div>
+		<div class="column half">
+			<h3>For Consumers</h3>
+			<ul class="fragment">
+				<li>Easy to find and index</li>
+				<li>Uses standardized vocabularies</li>
+				<li>Interoperable with other formats</li>
+				<li>High-performance: query large amounts of data</li>
+				<li>Good UX for common data types: arrays, tables, etc.</li>
+				<li>Streamable: get only the data you want</li>
+			</ul>
+		</div>
+	</div>
 
-				</section>
-				<section>
-					<h2>How do neuroscientists store their data?</h2>
+</section>
+<section>
+	<section>
+		<h2>Hierarchical Data Formats</h2>
+		<p>eg. BIDS, NWB</p>
+		<div class="row">
+			<div class="column half">
+				<h3>Good</h3>
+				<ul>
+					<li>Groups similar things together</li>
+					<li>Filesystem is a familiar metaphor</li>
+					<li>Everything has a single location</li>
+					<li>Format-general</li>
+				</ul>
+			</div>
+			<div class="column half">
+				<h3>Bad</h3>
+				<ul>
+					<li>References are hard</li>
+					<li>Reuse is hard</li>
+					<li>Everything has a single location</li>
+					<li>Not everything is a hierarchy</li>
+					<li>Deep nesting is cumbersome</li>
+				</ul>
+			</div>
+		</div>
 
-					Aside from "a bunch of random .mat files"
+
+	</section>
+
+	<section>
+		<h3>BIDS</h3>
+		<div class="row">
+			<div class="column third">
+				<p>Primarily used in neuroimaging, but also does EEG, fNIRS, etc.</p>
+				<ul>
+					<li>Hierarchical</li>
+					<li>Filesystem-Based: filenames encode type and metadata</li>
+					<li>Fixed set of types, or <a data-preview-link href="https://bids-standard.github.io/bids-starter-kit/folders_and_files/files.html#modalities">"modalities"</a> </li>
+					<li>Metadata in json + tsv files</li>
+					<li>Loose coupling with raw data: use whatever format you want, no guarantees on support</li>
+					<li>Single-use, JSON-Schema-like "<a href="https://github.com/bids-standard/bids-specification/tree/master/src/schema">bids schema language</a>"</li>
+				</ul>
+			</div>
+			<div class="column twothirds r-stack">
+				<div class="fragment fade-out">
+				<pre><code data-trim data-noescape>
+ds001
+├── dataset_description.json
+├── participants.tsv
+├── sub-01
+│   ├── anat
+│   │   ├── sub-01_inplaneT2.nii.gz
+│   │   └── sub-01_T1w.nii.gz
+│   └── func
+│       ├── sub-01_task-balloonanalogrisktask_run-01_bold.nii.gz
+│       ├── sub-01_task-balloonanalogrisktask_run-01_events.tsv
+│       ├── sub-01_task-balloonanalogrisktask_run-02_bold.nii.gz
+│       ├── sub-01_task-balloonanalogrisktask_run-02_events.tsv
+├── sub-02
+│   ├── anat
+│   ...
+				</code></pre>
+				<pre><span class="label">dataset_description.json</span><code data-trim data-noescape>
+{
+  "Name": "",
+  "BIDSVersion": "1.8.0",
+  "HEDVersion": "8.2.0",
+  "DatasetType": "raw",
+	"DatasetDOI": "doi:"
+	"...":"...",
+}
+					</code></pre></div>
+				<div class="fragment">
+					<pre><span class="label">participants.json</span><code data-trim >
+{
+  "age": {
+    "Description": "age of the participant",
+    "Units": "years",
+    "TermURL": "https://www.todo.com/fixme",
+    "HED": "Age/#"
+  },
+  "sex": {
+    "Description": "sex of the participant as reported by the participant",
+    "Levels": {
+      "m": "male",
+      "f": "female"
+    },
+    "TermURL": "https://www.todo.com/fixme"
+  },
+}
+					</code></pre>
+					<pre><span class="label">participants.tsv</span><code data-trim>
+participant_id	age	sex	handedness
+sub-01	        0		m		l
+sub-epilepsy01	10	f		r
+					</code></pre>
+				</div>
+			</div>
+		</div>
+	</section>
+</section>
+<section>
+	<section>
+	<h2>Relational</h2>
+	<p>eg. DataJoint, Spyglass</p>
+	<div class="row">
+		<div class="column half">
+			<h3>Good</h3>
+			<ul>
+				<li>Expressive</li>
+				<li>Performant</li>
+			</ul>
+		</div>
+		<div class="column half">
+			<h3>Bad</h3>
+			<ul>
+				<li>Brittle</li>
+				<li>Strict</li>
+				<li>Monolithic (or require hosting an endpoint and API)</li>
+				<li>Usually bad handling of arrays</li>
+				<li>Complicated query system</li>
+			</ul>
+		</div>
+	</div>
+	</section>
+	<section>
+		<h2>Datajoint Example</h2>
+		<div class="mermaid">
+			<pre>
+			erDiagram
+				Recording {
+					int device FK
+					int acquisition_software FK
+				}
+				RecordingInfo {
+					int recording FK
+					int nchannels
+					int nframes
+					int px_height
+					int px_width
+					float fps
+					str file FK
+				}
+				File {
+					string file_path
+				}
+				Device {
+				}
+				AcquisitionSoftware {
+				}
+				ProcessingParams {
+					int param_1
+					int etc
+				}
+				Processing{
+					int param_set FK
+					int recording_info FK
+				}
+				Segmentation {
+					int mask_npix
+					int mask_center_x
+					int mask_center_y
+					int mask_xpix
+					int mask_ypix
+				}
+				Fluorescence {
+					blob fluorescence
+					blob neuropil_fluorescence
+				}
 
 
-				</section>
-				<section>Slide 2</section>
+				Recording ||--|{ RecordingInfo: recording_info
+				RecordingInfo ||--|| File: file
+				Recording ||--|| AcquisitionSoftware: acquisition_software
+				Recording ||--|| Device: device
+				RecordingInfo ||--|{ Processing: processing
+				ProcessingParams ||--|{ Processing: params
+				Processing ||--|| Segmentation: segmentation
+				Segmentation ||--|| Fluorescence: fluorescence
+			</pre>
+		</div>
+	</section>
+</section>
+<section>
+	<h2>Graph-Like</h2>
+	<p>Usually RDF. Property, not class-centric.</p>
+	<div class="row">
+		<div class="column half">
+			<h3>Good</h3>
+			<ul>
+				<li>Extremely expressive</li>
+				<li>Easily refactorable</li>
+				<li>Interoperability by design</li>
+				<li>Rich and reusable metadata</li>
+			</ul>
+		</div>
+		<div class="column half">
+			<h3>Bad</h3>
+			<ul>
+				<li>Complex as all hell</li>
+				<li>Handles common data structures like lists and arrays very badly</li>
+				<li>Doesn't map neatly onto familiar patterns like object-oriented, filesystems, etc.</li>
+				<li>The tooling sucks</li>
+				<li>Lots of historical baggage</li>
+			</ul>
+		</div>
+	</div>
+</section>
+<section class="center">
+	<h2>Can we get the best of all worlds?</h2>
+	<ul>
+		<li>As familiar as files</li>
+		<li>As performant as relational databases</li>
+		<li>As expressive as RDF-like-things</li>
+	</ul>
+	<h2 class="fragment emphasis">We're sure as hell gonna try</h2>
+</section>
+<section>
+	<h2><code>nwb-linkml</code> overview</h2>
+
+</section>
 			</div>
 		</div>
 
@@ -89,6 +300,7 @@
 		<script src="plugin/highlight/highlight.js"></script>
 		<script src="plugin/menu/menu.js"></script>
 		<script src="plugin/reveald3/reveald3.js"></script>
+		<script src="plugin/mermaid/mermaid.js"></script>
 		<script>
 			// More info about initialization & config:
 			// - https://revealjs.com/initialization/
@@ -100,7 +312,7 @@
 				disableLayout: true,
 
 				// Learn about plugins: https://revealjs.com/plugins/
-				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes, RevealMenu, Reveald3 ]
+				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes, RevealMenu, Reveald3, RevealMermaid ]
 			});
 		</script>
 	</body>

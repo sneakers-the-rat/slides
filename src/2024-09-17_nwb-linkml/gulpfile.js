@@ -187,7 +187,10 @@ gulp.task('css-core', () => gulp.src(['css/index.scss'])
     .pipe(header(banner))
     .pipe(gulp.dest('./dist')))
 
-gulp.task('css', gulp.parallel('css-themes', 'css-core'))
+gulp.task('css-fonts', () => gulp.src(['css/fonts/**/*'])
+    .pipe(gulp.dest('./dist/fonts')))
+
+gulp.task('css', gulp.parallel('css-themes', 'css-core', 'css-fonts'))
 
 gulp.task('qunit', () => {
 
@@ -317,5 +320,9 @@ gulp.task('serve', () => {
         'css/custom/*.scss',
         'css/print/*.{sass,scss,css}'
     ], gulp.series('css-core', 'reload'))
+
+    gulp.watch([
+        'css/fonts/**/*'
+    ], gulp.series('css-fonts', 'reload'))
 
 })

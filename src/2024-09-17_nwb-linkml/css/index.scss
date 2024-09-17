@@ -1,3 +1,7 @@
+// Include theme-specific fonts
+@import 'fonts';
+
 @import 'reveal.scss';
+@import 'theme/source/black';
 @import 'custom/index';
 

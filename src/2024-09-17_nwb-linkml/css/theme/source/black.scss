@@ -4,6 +4,7 @@
  * By Hakim El Hattab, http://hakim.se
  */
 
+@use 'sass:color';
 
 // Default mixins and settings -----------------
 @import "../template/mixins";
@@ -11,14 +12,11 @@
 // ---------------------------------------------
 
 
-// Include theme-specific fonts
-@import url(./fonts/source-sans-pro/source-sans-pro.css);
-
-
 // Override theme settings (see ../template/settings.scss)
 $backgroundColor: #191919;
 
 $mainColor: #fff;
+$shadeColor: color.adjust($mainColor, $lightness: -40%);
 $headingColor: #fff;
 
 $mainFontSize: 42px;
@@ -31,6 +29,7 @@ $headingFontWeight: 600;
 $linkColor: #42affa;
 $linkColorHover: lighten( $linkColor, 15% );
 $selectionBackgroundColor: rgba( $linkColor, 0.75 );
+$accentColor: #ff9b2c;
 
 $heading1Size: 2.5em;
 $heading2Size: 1.6em;
@@ -44,3 +43,4 @@ $heading4Size: 1.0em;
 // Theme template ------------------------------
 @import "../template/theme";
 // ---------------------------------------------
+

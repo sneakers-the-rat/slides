@@ -1,0 +1,20 @@
+$codeBackgroundColor: #272822;
+
+.reveal pre {
+  width: 100%;
+
+
+  span.label {
+    background-color: $codeBackgroundColor;
+    padding: 0.25em 0.5em 0 0.5em;
+    border-radius: 5px 5px 0 0;
+    color: $accentColor;
+    border: 1px solid $shadeColor;
+    border-bottom: 1px solid $accentColor;
+  }
+
+  code {
+    border: 1px solid $shadeColor;
+    max-height: 50%;
+  }
+}

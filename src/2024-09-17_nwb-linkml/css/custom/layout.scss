@@ -6,14 +6,19 @@ $breakpoint-med: 1000px;
   & > section {
     box-sizing: border-box;
     padding: $container-padding;
+  }
+  & section {
 
     .row {
       display: flex;
       flex-direction: row;
+      width: 100%;
+      column-gap: 0.5em;
+
       @media (max-width: $breakpoint-med){
         flex-wrap: wrap;
       }
-      width: 100%;
+
     }
 
     .column {
@@ -22,7 +27,30 @@ $breakpoint-med: 1000px;
       &.half {
         max-width: 50%;
       }
+      &.third {
+        max-width: calc(33% - 0.5em/2);
+        div {
+          width: 100%;
+        }
+      }
+      &.twothirds {
+        max-width: calc(66% - 0.5em/2);
+        div {
+          width: 100%;
+        }
+      }
+
     }
+
   }
 }
 
+section.center {
+  text-align: center;
+  margin: auto;
+  display: flex !important;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
