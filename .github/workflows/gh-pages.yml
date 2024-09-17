@@ -10,26 +10,9 @@ permissions:
   id-token: write
 
 jobs:
-#  read_yaml:
-#    runs-on: ubuntu-latest
-#    name: Read slide configuration
-#    steps:
-#      - uses: actions/@checkout@v3
-  # use this: https://github.com/marketplace/actions/yq-portable-yaml-processor
-
 #  slides:
 #    # This should definitely be abstracted, but for now just going
 #    # to hardcode each slide directory
-#    runs-on: ubuntu-latest
-#    strategy:
-#      matrix:
-#        slideshow:
-#          - 2023-04-13_lab-meeting
-#    steps:
-#      - uses: actions/checkout@v3
-#      - uses: ./.github/actions/spectacle
-#        with:
-#          path: ${{ matrix.slideshow }}
 
   slides:
     runs-on: ubuntu-latest
@@ -148,8 +131,8 @@ jobs:
         if: ${{ steps.slides-cache.outputs.cache-hit != 'true' }}
         with:
           node-version: 22
-#          cache: yarn
-#          cache-dependency-path: src/2024-09-17_nwb-linkml/yarn.lock
+          cache: yarn
+          cache-dependency-path: src/2024-09-17_nwb-linkml/yarn.lock
 
       - name: Install yarn deps
         working-directory: src/2024-09-17_nwb-linkml/
@@ -166,12 +149,6 @@ jobs:
         with:
           name: slides-artifact-4
           path: src/2024-09-17_nwb-linkml/dist/
-
-
-
-
-
-
 
   jekyll:
     runs-on: ubuntu-latest
@@ -219,19 +196,6 @@ jobs:
 
       - name: run tree 1
         run: tree ./
-
-      # - name: Download Slides Artifact 3 again bc jekyll is ridiculous
-      #   uses: actions/download-artifact@v3
-      #   with:
-      #     name: slides-artifact-3
-      #     path: site/earthseed/
-          # Use GitHub Actions' cache to shorten build times and decrease load on servers
-      # - uses: helaili/jekyll-action@2.4.0    # Choose any one of the Jekyll Actions
-      #   with:                                # Some relative inputs of your action
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     jekyll_src: "site"
-      #     build_dir: "../dist"
-      #     target_branch: 'gh-pages'
 
       - name: Setup Pages
         id: pages
