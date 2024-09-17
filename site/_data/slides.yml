@@ -10,3 +10,7 @@
   date: 2023-08-03
   path: 2023-08-03_earthseed
   description: Updates on lab server!!!
+- name: Lab Meeting - nwb-linkml implementation chat
+  date: 2024-09-17
+  path: 2024-09-17_nwb-linkml
+  description: Implementation details and some knotty problems and patterns of nwb-linkml just before shipping it <3

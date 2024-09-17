@@ -148,6 +148,45 @@ jobs:
           name: slides-artifact-3
           path: src/2023-08-02_earthseed/dist/_build/html
 
+  slides4:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Slides cache
+        uses: actions/cache@v3
+        id: slides-cache
+        with:
+          path: src/2024-09-17_nwb-linkml/dist
+          key: ${{ runner.os }}-slidesv4-${{ hashFiles('./src/2024-09-17_nwb-linkml/**/*') }}
+          restore-keys: |
+            ${{ runner.os }}-slidesv4-
+      - name: Install Node
+        uses: actions/setup-node@v4
+        if: ${{ steps.slides-cache.outputs.cache-hit != 'true' }}
+        with:
+          node-version: 22
+          cache: yarn
+          cache-dependency-path: src/2024-09-17_nwb-linkml/package-lock.json
+
+      - name: Install yarn deps
+        working-directory: src/2024-09-17_nwb-linkml/
+        if: ${{ steps.slides-cache.outputs.cache-hit != 'true' }}
+        run: yarn install
+
+      - name: Build page
+        working-directory: src/2024-09-17_nwb-linkml/
+        if: ${{ steps.slides-cache.outputs.cache-hit != 'true' }}
+        run: yarn run build
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: slides-artifact-4
+          path: src/2024-09-17_nwb-linkml/dist/
+
+
+
+
 
 
 
@@ -187,6 +226,12 @@ jobs:
         with:
           name: slides-artifact-3
           path: _site/2023-08-03_earthseed/
+
+      - name: Download Slides Artifact 4
+        uses: actions/download-artifact@v3
+        with:
+          name: slides-artifact-4
+          path: _site/2024-09-17_nwb-linkml/
 
       - name: run tree 1
         run: tree ./

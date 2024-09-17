@@ -20,7 +20,7 @@ const minify = require('gulp-clean-css')
 const connect = require('gulp-connect')
 const autoprefixer = require('gulp-autoprefixer')
 
-const root = yargs.argv.root || '.'
+const root = yargs.argv.root || './dist'
 const port = yargs.argv.port || 8000
 const host = yargs.argv.host || 'localhost'
 
@@ -113,12 +113,13 @@ gulp.task('js-es6', () => {
         });
     });
 })
+
 gulp.task('js', gulp.parallel('js-es5', 'js-es6'));
 
 // Creates a UMD and ES module bundle for each of our
 // built-in plugins
-gulp.task('plugins', () => {
-    return Promise.all([
+gulp.task('plugins', async () => {
+   await Promise.all([
         { name: 'RevealHighlight', input: './plugin/highlight/plugin.js', output: './plugin/highlight/highlight' },
         { name: 'RevealMarkdown', input: './plugin/markdown/plugin.js', output: './plugin/markdown/markdown' },
         { name: 'RevealSearch', input: './plugin/search/plugin.js', output: './plugin/search/search' },
@@ -151,7 +152,8 @@ gulp.task('plugins', () => {
                     name: plugin.name,
                     format: 'umd'
                 })
-            });
+
+            }).then(gulp.src('plugin/**/*').pipe(gulp.dest('dist/plugin')));
     } ));
 })
 
@@ -191,6 +193,12 @@ gulp.task('css-fonts', () => gulp.src(['css/fonts/**/*'])
     .pipe(gulp.dest('./dist/fonts')))
 
 gulp.task('css', gulp.parallel('css-themes', 'css-core', 'css-fonts'))
+
+gulp.task('img', () => gulp.src(['img/**/*'])
+    .pipe(gulp.dest('./dist/img')))
+
+gulp.task('html', () => gulp.src(['index.html'])
+    .pipe(gulp.dest('./dist')))
 
 gulp.task('qunit', () => {
 
@@ -267,7 +275,7 @@ gulp.task('test', gulp.series( 'eslint', 'qunit' ))
 
 gulp.task('default', gulp.series(gulp.parallel('js', 'css', 'plugins'), 'test'))
 
-gulp.task('build', gulp.parallel('js', 'css', 'plugins'))
+gulp.task('build', gulp.parallel('js', 'css', 'plugins', 'img', 'html'))
 
 gulp.task('package', gulp.series(() =>
 
@@ -286,7 +294,7 @@ gulp.task('package', gulp.series(() =>
 
 ))
 
-gulp.task('reload', () => gulp.src(['index.html'])
+gulp.task('reload', () => gulp.src(['dist/index.html'])
     .pipe(connect.reload()));
 
 gulp.task('serve', () => {
@@ -316,6 +324,10 @@ gulp.task('serve', () => {
     ], gulp.series('css-themes', 'reload'))
 
     gulp.watch([
+        'index.html'
+    ], gulp.series('html', 'reload'))
+
+    gulp.watch([
         'css/*.scss',
         'css/custom/*.scss',
         'css/print/*.{sass,scss,css}'
@@ -324,5 +336,9 @@ gulp.task('serve', () => {
     gulp.watch([
         'css/fonts/**/*'
     ], gulp.series('css-fonts', 'reload'))
+
+    gulp.watch([
+        'img/**/*'
+    ], gulp.series('img', 'reload'))
 
 })
