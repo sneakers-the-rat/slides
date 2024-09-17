@@ -165,8 +165,8 @@ jobs:
         if: ${{ steps.slides-cache.outputs.cache-hit != 'true' }}
         with:
           node-version: 22
-          cache: yarn
-          cache-dependency-path: src/2024-09-17_nwb-linkml/package-lock.json
+#          cache: yarn
+#          cache-dependency-path: src/2024-09-17_nwb-linkml/yarn.lock
 
       - name: Install yarn deps
         working-directory: src/2024-09-17_nwb-linkml/
@@ -196,6 +196,7 @@ jobs:
       - slides
       - slides2
       - slides3
+      - slides4
 
     steps:
       - name: install tree
