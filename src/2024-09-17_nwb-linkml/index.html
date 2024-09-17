@@ -6,7 +6,6 @@
 
 		<title>NWB in LinkML - Lab Meeting 2024-09-16</title>
 
-		<link rel="stylesheet" href="reset.css">
 		<link rel="stylesheet" href="index.css">
 
 		<!-- Theme used for syntax highlighted code -->
@@ -335,14 +334,14 @@ namespaces:
 '/var/tmp/some_hash/nwb_linkml__cache/git/core/nwb.namespace.yaml'
 			</code></pre>
 			And since parsing yaml is expensive, we peek with regex for the version...
-<pre><code data-trim data-noescape>
+<pre><code data-trim class="language-python">
 def yaml_peek(
 		key: str, path: Union[str, Path], root: bool = True, first: bool = True
 ) -> Union[str, List[str]]:
 		if root:
-        pattern = re.compile(rf"^(?P<key>{key}):\s*(?P<value>\S.*)")
+        pattern = re.compile(rf"^(?P&lt;key&gt;{key}):\s*(?P&lt;value&gt;\S.*)")
     else:
-        pattern = re.compile(rf"^\s*(?P<key>{key}):\s*(?P<value>\S.*)")
+        pattern = re.compile(rf"^\s*(?P&lt;key&gt;{key}):\s*(?P&lt;value&gt;\S.*)")
 		# ...
 		with open(path) as yfile:
 				for line in yfile:
@@ -364,6 +363,7 @@ def yaml_peek(
 					We want to provide all versions of all schemas.<br>
 					Coincidentally, we also need to cache a lot.<br>
 					So we use .env to make a relocatable cache...
+				</p>
 				<pre>
 __tmp__
 ├── git
@@ -389,7 +389,6 @@ __tmp__
     │   └── v1_8_0
 		</pre>
 
-				</p>
 			</div>
 			<div class="column half">
 				And <a href="https://docs.python.org/3/library/importlib.html#importlib.abc.MetaPathFinder">patch into the python import machinery</a> so a model can be imported from the cache as if it's a normal python module
@@ -824,7 +823,7 @@ Class GroupAdapter(ClassAdapter):
 			<li><strong>VectorData:</strong> A column of data within a DynamicTable that can also have a...</li>
 			<li><strong>VectorIndex:</strong> Another column of indices that turn a VectorData column into a ragged-length array</li>
 			<li><strong>DynamicTableRegion:</strong> A subclass of VectorData with a reference to another table, which makes it both a vector of table rows AND a ragged array of table rows</li>
-			<li><strong>AlignedDynamicTable:</strong> A subclass of DynamicTable which can contain multiple tables with matching <code>id</code> columns</code></li>
+			<li><strong>AlignedDynamicTable:</strong> A subclass of DynamicTable which can contain multiple tables with matching <code>id</code> columns</li>
 			<li><strong>TimeSeriesReferenceVectorData:</strong> A subclass of VectorData that can refer to arbitrary ranges within a TimeSeries dataset, which can have a VectorIndex making it a ragged array of arbitrary ranges of a TimeSeries</li>
 		</ul>
 		</div>
