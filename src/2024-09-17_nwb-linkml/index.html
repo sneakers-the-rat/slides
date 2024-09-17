@@ -21,23 +21,11 @@
 
 		## Background
 
-		- Design Requirements
-		- Modeling paradigms: Hierarchical, Relational, RDF-like
-
 		## Implementation
-		- Overview
-			- Repo structure, diagram, etc.
-		- NWB -> LinkML
-		- LinkML -> Pydantic
-		- Numpydantic
-		- Loading
-		- Data format & Markup
 
-		## Integration
+		## Numpydantic
 
-		- Re: Rest of lab projects...
-		- Custom schemas & import syntax
-		- Towards p2p...
+		## The Future...
 	</textarea>
 </section>
 <section>
@@ -826,6 +814,7 @@ Class GroupAdapter(ClassAdapter):
 	</div>
 </section>
 <section>
+	<section>
 	<div class="r-stack">
 		<div>
 		<h2>problem 4: most of nwb is implemented as special-cased classes that only exist in words in the schema</h2>
@@ -841,14 +830,352 @@ Class GroupAdapter(ClassAdapter):
 		</div>
 		<img class="fragment" src="img/jesus.png">
 	</div>
-</section>
+	</section>
+	<section>
+		<h2>Lifecycle methods to the rescue</h2>
+		<p>The linkml pydantic generator lets you modify generation per class and slot</p>
+		<pre><code data-trim class="language-python">
+for cls in source_classes:
+	cls = self.before_generate_class(cls, sv)
+	result = self.generate_class(cls)
+	result = self.after_generate_class(result, sv)
+		</code></pre>
+		<p>So we can cleanly partition the HDMF special cases into <a href="https://github.com/p2p-ld/nwb-linkml/blob/main/nwb_linkml/src/nwb_linkml/includes/hdmf.py">a set of mixin classes</a></p>
+		<pre><code data-trim class="language-python">
+class VectorDataMixin(BaseModel, Generic[T]):
+	def __getitem__(self, item: Union[str, int, slice, Tuple[Union[str, int, slice], ...]]) -> Any:
+	def __setitem__(self, key: Union[int, str, slice], value: Any) -> None:
 
-				<section>
-					<div class="row">
-						<div class="column half"></div>
-						<div class="column half"></div>
-					</div>
-				</section>
+class VectorIndexMixin(BaseModel, Generic[T]):
+	def __getitem__(self, item: Union[int, slice, Iterable]) -> Any:
+	def __setitem__(self, key: Union[int, slice], value: Any) -> None:
+		</code></pre>
+		<p>And inject them during the generation process</p>
+		<pre><code data-trim class="language-python">
+def after_generate_class(self, cls: ClassResult, sv: SchemaView) -> ClassResult:
+		"""Customize dynamictable behavior"""
+		cls = AfterGenerateClass.inject_dynamictable(cls)
+		cls = AfterGenerateClass.wrap_dynamictable_columns(cls, sv)
+		cls = AfterGenerateClass.inject_elementidentifiers(cls, sv, self._get_element_import)
+		cls = AfterGenerateClass.strip_vector_data_slots(cls, sv)
+		return cls
+		</code></pre>
+
+	</section>
+	<section>
+		<p>Where we can emulate the behavior of hdmf accurately <3</p>
+		<pre><code data-trim class="language-python">
+>>> intracellular_recordings_table[0:5]
+   electrodes                                                    stimuli                              responses
+           id                                          electrode      id                     stimulus        id                  response
+id
+0           0  hdf5_path=None object_id=None name='my_electro...       0  [0, 0, 0, 0, 0, 0, 0, 0, 0]         0                       [0]
+1           1  hdf5_path=None object_id=None name='my_electro...       1     [1, 1, 1, 1, 1, 1, 1, 1]         1                    [1, 1]
+2           2  hdf5_path=None object_id=None name='my_electro...       2  [2, 2, 2, 2, 2, 2, 2, 2, 2]         2  [2, 2, 2, 2, 2, 2, 2, 2]
+3           3  hdf5_path=None object_id=None name='my_electro...       3              [3, 3, 3, 3, 3]         3           [3, 3, 3, 3, 3]
+4           4  hdf5_path=None object_id=None name='my_electro...       4                       [4, 4]         4                    [4, 4]
+
+		</code></pre>
+		<p>And handle references by substituting the object directly</p>
+		<pre><code>
+>>> intracellular_recordings_table[0:5].electrodes.electrode[0]
+IntracellularElectrode(
+			hdf5_path=None,
+			object_id=None,
+			name='my_electrode',
+			cell_id=None,
+			description='an electrode',
+			filtering=None,
+			initial_access_resistance=None,
+			location=None,
+			resistance=None,
+			seal=None,
+			slice=None,
+			device=Device(hdf5_path=None, object_id=None, name='my device', description=None, manufacturer=None))
+
+		</code></pre>
+	</section>
+</section>
+<section>
+	<section>
+	<h2>Numpydantic - it's got what arrays crave</h2>
+	<p>How do we generalize the specification of an array to not be dependent on any one format?</p>
+	<pre><code data-trim class="language-python">
+class TimeSeriesData(ConfiguredBaseModel):
+    """
+    Data values. Data can be in 1-D, 2-D, 3-D, or 4-D. The first dimension should always represent time. This can also be used to store binary data (e.g., image frames). This can also be a link to data stored in an external file.
+    """
+		value: Optional[
+			Union[
+					NDArray[Shape["* num_times"], Any],
+					NDArray[Shape["* num_times, * num_dim2"], Any],
+					NDArray[Shape["* num_times, * num_dim2, * num_dim3"], Any],
+					NDArray[Shape["* num_times, * num_dim2, * num_dim3, * num_dim4"], Any],
+			]
+    ] = Field(None)
+	</code></pre>
+	</section>
+	<section>
+		<h2>Overview</h2>
+		<p>Interfaces provide an abstract coercion and type checking system</p>
+		<div class="mermaid">
+			<pre>
+%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true }}}%%
+flowchart LR
+	classDef data fill:#2b8cee,color:#ffffff;
+	classDef X fill:transparent,border:none,color:#ff0000;
+
+	input
+
+	subgraph Interface
+	match
+	end
+
+	subgraph Numpy
+	numpy_check["check"]
+	end
+
+	subgraph Dask
+	direction TB
+
+	dask_check["check"]
+
+	subgraph Validation
+	direction TB
+
+	before_validation --> validate_dtype
+	validate_dtype --> validate_shape
+	validate_shape --> after_validation
+	end
+
+	dask_check --> Validation
+
+	end
+
+	subgraph Zarr
+	zarr_check["check"]
+	end
+
+	subgraph Model
+	output
+	end
+
+	zarr_x["X"]
+	numpy_x["X"]
+
+	input --> match
+	match --> numpy_check
+	match --> zarr_check
+	match --> Dask
+	zarr_check --> zarr_x
+	numpy_check --> numpy_x
+
+	Validation --> Model
+
+	class input data
+	class output data
+	class zarr_x X
+	class numpy_x X
+			</pre>
+		</div>
+	</section>
+	<section>
+		<h2>Using the pydantic validation system</h2>
+		<pre><code data-trim class="language-python">
+class NDArray(NPTypingType, metaclass=NDArrayMeta):
+		@classmethod
+    def __get_pydantic_core_schema__(
+        cls,
+        _source_type: "NDArray",
+        _handler: _handler_type,
+    ) -> core_schema.CoreSchema:
+        shape, dtype = _source_type.__args__
+        shape: ShapeType
+        dtype: DtypeType
+
+        # get pydantic core schema as a list of lists for JSON schema
+        list_schema = make_json_schema(shape, dtype, _handler)
+
+        return core_schema.json_or_python_schema(
+            json_schema=list_schema,
+            python_schema=core_schema.with_info_plain_validator_function(
+                get_validate_interface(shape, dtype)
+            ),
+            serialization=core_schema.plain_serializer_function_ser_schema(
+                _jsonize_array, when_used="json", info_arg=True
+            ),
+        )
+		</code></pre>
+	</section>
+	<section>
+		<p>Each NDArray type has a closure to find validators at runtime</p>
+		<pre><code>
+def get_validate_interface(shape: ShapeType, dtype: DtypeType) -> Callable:
+    """
+    Validate using a matching :class:`.Interface` class using its
+    :meth:`.Interface.validate` method
+    """
+
+    def validate_interface(
+        value: Any, info: Optional["ValidationInfo"] = None
+    ) -> NDArrayType:
+        interface_cls = Interface.match(value)
+        interface = interface_cls(shape, dtype)
+        value = interface.validate(value)
+        return value
+
+    return validate_interface
+		</code></pre>
+
+	</section>
+	<section>
+		<p>And an interface follows a familiar lifecycle hook pattern...</p>
+		<pre><code class="language-python">
+class Interface(ABC, Generic[T]):
+		input_types: Tuple[Any, ...]
+    return_type: Type[T]
+
+		def validate(self, array: Any) -> T:
+			  array = self.before_validation(array)
+
+        dtype = self.get_dtype(array)
+        dtype_valid = self.validate_dtype(dtype)
+        self.raise_for_dtype(dtype_valid, dtype)
+        array = self.after_validate_dtype(array)
+
+        shape = self.get_shape(array)
+        shape_valid = self.validate_shape(shape)
+        self.raise_for_shape(shape_valid, shape)
+
+        array = self.after_validation(array)
+        return array</code></pre>
+	</section>
+	<section>
+		<h2>The ecstasy of generality</h2>
+		<pre><code data-trim class="language-python">
+from pydantic import BaseModel
+from numpydantic import NDArray, Shape
+import numpy as np
+import dask.array as da
+import zarr
+
+class MyModel(BaseModel):
+    array: NDArray[Shape["3 x, 4 y, * z"], int]
+
+# numpy
+model = MyModel(array=np.zeros((3, 4, 5), dtype=int))
+# dask
+model = MyModel(array=da.zeros((3, 4, 5), dtype=int))
+# hdf5 datasets
+model = MyModel(array=('data.h5', '/nested/dataset'))
+# zarr arrays
+model = MyModel(array=zarr.zeros((3,4,5), dtype=int))
+model = MyModel(array='data.zarr')
+model = MyModel(array=('data.zarr', '/nested/dataset'))
+# video files
+model = MyModel(array="data.mp4")
+		</code></pre>
+	</section>
+</section>
+<section>
+	<section>
+	<h2>A Conversion-less data format</h2>
+	<p>What if i told you that this was totally unnecessary...</p>
+	<div class="row">
+		<div class="column third"><pre>
+to_nwb
+├── IBL-to-nwb
+├── MICrONS-to-nwb
+├── ahrens-lab-to-nwb
+├── allen-oephys-to-nwb
+├── axel-lab-to-nwb
+├── brody-lab-to-nwb
+├── brunton-lab-to-nwb
+├── buffalo-lab-to-nwb
+├── buzsaki-lab-to-nwb
+├── clandinin-lab-to-nwb
+├── datta-lab-to-nwb
+├── dombeck-lab-to-nwb
+├── fee-lab-to-nwb
+├── feldman-lab-to-nwb
+├── froemke-lab-to-nwb
+├── giocomo-lab-to-nwb
+├── higley-lab-to-nwb
+├── hussaini-lab-to-nwb
+├── jaeger-lab-to-nwb
+├── jazayeri-lab-to-nwb
+├── ...
+		</pre></div>
+		<div class="column twothirds"><pre>
+$ cloc to_nwb
+		1227 text files.
+    1031 unique files.
+     276 files ignored.
+
+github.com/AlDanial/cloc v 2.02  T=1.37 s (752.6 files/s, 104684.6 lines/s)
+--------------------------------------------------------------------------------
+Language                      files          blank        comment           code
+--------------------------------------------------------------------------------
+Python                          629          11254          10842          50912
+Jupyter Notebook                 64              0          42912           7635
+Text                             70             19              0           4818
+YAML                            158            128            131           4636
+Markdown                         78           1339              0           4294
+JSON                             10             21              0           3842
+TOML                             16             21              0            421
+CSV                               2              0              0             94
+Bourne Again Shell                1              5              0             19
+MATLAB                            1              6              8             18
+Bourne Shell                      1              5              1             14
+INI                               1              4              0             14
+--------------------------------------------------------------------------------
+SUM:                           1031          12802          53894          76717
+--------------------------------------------------------------------------------
+		</pre></div>
+	</div>
+	</section>
+	<section>
+		<h2>NWB: light as a feather, strong as an ox</h2>
+		<p>High-performance, well-defined data models compatible with arbitrary array backends with three dependencies.
+			An overlay format that takes data as it comes. </p>
+		<pre><code data-trim class="language-yaml">
+meta:
+  id: my_dataset
+	# Import schemas from anywhere, local files, pypi, URIs, whatevs
+	imports:
+    core:
+      as: nwb
+      version: "2.7.0"
+      from:
+        - pypi: nwb-models
+				- uri: https://example.com/nwb
+
+# mix and match data and schemas
+data: !nwb.NWBFile
+	identifier: "blake2b:hashhashhash"
+	acquisition:
+		running_wheel_rotation: !nwb.TimeSeries
+			hdf5:
+				file: my_data/file.h5
+				path: /dataset/within/file
+				hash: blake2b:hashahsh
+		my_ephys: !nwb.ElectricalSeries
+			zarr: my_zarr_array.zarr
+			hash: blake2b: hashhashfuiehwf
+	stimulus:
+		mouse_movies:
+			video: the_matrix_1999.mp4
+
+
+
+
+		</code></pre>
+	</section>
+</section>
+<section class="center">
+	<h1>Pause for reflection on integration with rest of lab projects...</h1>
+
+</section>
 
 				<section>
 					<div class="row">
