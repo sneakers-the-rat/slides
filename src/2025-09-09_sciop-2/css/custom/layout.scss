@@ -1,0 +1,103 @@
+$container-padding: 1em;
+$breakpoint-med: 1000px;
+$indent-width: 5rem;
+
+@use "../theme/source/black";
+
+.reveal .slides {
+
+  & > section {
+    box-sizing: border-box;
+    padding: $container-padding;
+  }
+  & section {
+
+    .row {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      column-gap: 0.5em;
+
+      @media (max-width: $breakpoint-med){
+        flex-wrap: wrap;
+      }
+
+    }
+
+    .column {
+      flex-grow: 1;
+
+      &.half {
+        max-width: 50%;
+      }
+      &.third {
+        max-width: calc(33% - 0.5em/2);
+        div {
+          width: 100%;
+        }
+      }
+      &.twothirds {
+        max-width: calc(60% - 0.5em/2);
+        div {
+          width: 100%;
+        }
+      }
+
+    }
+
+  }
+}
+
+section.center {
+  text-align: center;
+  margin: auto;
+  display: flex !important;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.reveal {
+  .indent-1 {
+    margin-left: $indent-width;
+  }
+  .indent-2 {
+    margin-left: $indent-width * 2;
+  }
+}
+
+.fullscreen {
+  width: 100%;
+  overflow-y: scroll;
+  object-fit: cover;
+  img {
+    width: 100%;
+    height: auto;
+    max-width: unset;
+    max-height: unset;
+  }
+  &::-webkit-scrollbar {
+    width: 0px;
+    background: transparent; /* make scrollbar transparent */
+  }
+}
+
+.reveal .slides {
+  overflow-y: scroll;
+  &::-webkit-scrollbar {
+    width: 0px;
+    background: transparent; /* make scrollbar transparent */
+  }
+}
+
+.spacer {
+  height: 1em;
+}
+
+.surface {
+  background-color: $surfaceBackgroundColor;
+  padding: 0.5em 1em;
+  border: 1px solid $borderColor;
+  border-radius: 1em;
+}

@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Sciop 2 - Lab Meeting 2025-09-09</title>
+
+		<link rel="stylesheet" href="index.css">
+
+		<!-- Theme used for syntax highlighted code -->
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+<section data-markdown>
+
+	<textarea data-template>
+    <div class="row">
+  <div class="column half">
+
+    ## Sciop! Again!
+
+    <https://codeberg.org/Safeguarding/sciop>
+
+    Updates on work done since april
+
+    - The Kronkelianator
+    - Scheduling
+    - Lil Vignettes
+      - Sorting - neat lil ux problem
+      - Webseeds - async jobs & torrent-models
+      - Atom feeds - hints of a plugin architecture
+
+  </div>
+  <div class="column half">
+
+    ## Federation
+
+    Finally stable enough to start working on it...
+
+    - Mobile Identity
+    - Forks & Multi-origin metadata
+  </div>
+</div>
+  </textarea>
+</section>
+<section>
+
+  <h2>Current status</h2>
+  <div class="row">
+    <div class="column half">
+
+  <img src="img/sciop-stats-25-09-08.png" style="width: 100%;">
+    </div>
+    <div class="column half">
+      <ul>
+        <li>Several dedicated independent institutional and amateur seedboxes launched</li>
+        <li>A few "big wins" in datasets preserved, and continued progress on huge projects like climate data</li>
+        <li>Vs. academictorrents: 298TB total uploads, 1310 torrents.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section>
+  <h2>E.g. Smithsonian</h2>
+  <div class="row">
+    <div class="column half">
+      <p>
+      "Let's revise history"
+      </p>
+	    <img src="img/smithsonian-0.png" class="fullscreen">
+    </div>
+    <div class="column half fragment">
+      <p>
+        "How bout we don't"
+      </p>
+      <img src="img/smithsonian-1.png" class="fullscreen">
+    </div>
+  </div>
+</section>
+<section>
+		<h1>
+		The Kronkelianator!
+		</h1>
+    <p class="aside smaller">Or, the kronkler, kronkelator, ...</p>
+    <p>Towards a distributed archive.org!</p>
+    <p>Say we need to preserve something fast... we may want to split it up in parts and let people take different parts...</p>
+  <p>Problems:</p>
+  <ul>
+    <li>How to distribute the scraping code?</li>
+    <li>How to deduplicate scraping chunks</li>
+    <li>How to validate the scrapes?</li>
+    <li>How to pack and upload the scraped data?</li>
+  </ul>
+  <p class="emphasis fullscreen fragment center">Use sciop to coordinate the scrape!</p>
+</section>
+<section>
+	<h1>Straight Up Kronkin' It 1: The Claims API</h1>
+  <p class="aside smaller">And by "it," haha well lets just say. my chronicle of american newspapers</p>
+  <div class="row">
+    <div class="column half">
+  <ul>
+    <li>Create a Dataset</li>
+    <li>Create some parts that represent the different chunks to scrape</li>
+    <li>Let people claim the parts</li>
+    <li>Use info about claims to coordinate what you should scrape</li>
+    <li>Or, Let the server tell you what to scrape with a <code>/next</code> endpoint</li>
+  </ul>
+
+      <img src="img/chronam-header.png">
+      <img src="img/chronam-parts.png">
+    </div>
+    <div class="column half fragment">
+      <img src="img/claims-0.png">
+      <img src="img/claims-1.png">
+    </div>
+  </div>
+</section>
+<section>
+  <h1>Straight up Kronkin' It 2: The Scraper</h1>
+  <a href="https://codeberg.org/safeguarding/sciop-scraping">sciop-scraping</a>
+  <div class="row">
+    <div class="column half">
+      <ul>
+        <li>Manage scrape state - incompletes, restarts, errors, etc.</li>
+        <li>Get new subquests from the claims API</li>
+        <li>~ Do the Scraping ~</li>
+        <li>Validate the scrape</li>
+        <li>Create the torrent</li>
+        <li>Upload the torrent to sciop and a bittorrent client</li>
+      </ul>
+      <div class="spacer"></div>
+      <div class="surface">
+        <p class="highlight">To Participate in the scrape, just....</p>
+        <pre>
+				<code data-trim class="language-bash">
+python -m pip install sciop-scrape sciop-cli
+sciop-cli login
+sciop-cli client login
+sciop-scrape chronicling-america --next
+        </code>
+      </pre>
+      </div>
+    </div>
+    <div class="column half">
+      <span>Quests organize a scrape</span>
+      <pre>
+        <code data-trim class="language-python">
+class ChroniclingAmericaQuest(Quest):
+    name = "chronicling-america"
+    dataset_slug = "chronicling-america"
+    spider = ChroniclingAmericaSpider
+    resume: bool = False
+
+    # hooks for each phase
+    def before_scrape(self, res: "QuestStatus") -> "QuestStatus": ...
+
+    # implement quest-specific behavior
+    def validate_scrape(self, res: QuestStatus) -> QuestStatus: ...
+        </code>
+      </pre>
+      <span>Use scrapy spiders!</span>
+      <pre>
+        <code data-trim class="language-python">
+class ChroniclingAmericaSpider(scrapy.Spider):
+    async def start(self) -> AsyncIterator[scrapy.Request]:
+        yield scrapy.Request(
+            manifest_url,
+            callback=self.parse_manifest
+        )
+
+    async def parse_manifest(response: TextResponse):
+        # some stuff to parse the manifest...
+        for url in to_scrape:
+            yield response.follow(
+                url,
+                callback=self.parse_file
+            )
+        </code>
+      </pre>
+    </div>
+
+  </div>
+</section>
+<section>
+	<div class="row">
+	<div class="column third">
+	<p>
+		E.g. Data Rescue Project
+	</p>
+	<p>
+		Manual annotation workflow on baserow.
+	</p>
+	<p>
+		Closed moderation and submission process.
+	</p>
+	<p>
+		Nice cataloguing and indexing project! Great metadata
+	</p>
+	<p class="fragment">
+		Can only link to data - no means of dissemination
+	</p>
+	</div>
+	<div class="column twothirds">
+	<img src="img/drp.png" class="fragment"/>
+	</div>
+	</div>
+</section>
+<section>
+	<h2>It's been 5 weeks</h2>
+	<p>Government-hosted data was the first, easy target.</p>
+	<p>Amazon, Google, and Microsoft are demonstrating complete willingness to go along</p>
+	<p>Some critical datasets are so big they exist in literally one place</p>
+	<p class="highlight fragment" style="font-size: 2em;">Without resolving the storage problem, foundational information about our world and cultural history will be lost.</p>
+</section>
+<section>
+	<h2>Doing what we must with what we have</h2>
+	<div class="fullscreen indent-1">
+	<p>
+		... welcome back bittorrent
+	</p>
+	<p class="indent-2 smaller italic">
+		... (she never left)
+	</p>
+	</div>
+</section>
+<section>
+	<h2>
+		Recall our old friend merkle tree...
+	</h2>
+	<div style="background: #eee;">
+	<img src="img/merkle-hash-tree.png"/>
+	</div>
+</section>
+<section>
+	<p>Torrent files are a json-like structure identified by the hash of their info dict</p>
+	<pre>
+				<code data-trim data-line-numbers="5|5-19|21" class="language-json">
+{
+    "announce": "udp://tracker.opentrackr.org:1337/announce",
+    "created by": "jonny",
+    "creation date": 1739162548,
+    "info": {
+        "file tree": {
+					"file.exe": {
+					  "": {
+					    "length": 10485760,
+					    "pieces root": "\\g\x83\xee\x08\xfc\xcf\xd2Z\xd9\xdc\xdd\xca\xeb\x9a=:\x81*$\xf0\x855z5l\x18m3\xd5\xb0+"
+						}
+					}
+				},
+        "files": [{"length": 10485760, "path": ["file.exe"]}],
+        "meta version": 2,
+        "name": "subdir",
+        "piece length": 32768,
+        "pieces": "..."
+		},
+		"piece layers": { "...": "..." },
+		"whatever else": "anything"
+}
+				</code>
+	</pre>
+
+</section>
+<section class="center">
+	<p>Trackers are the indexing and social layer of bittorrent</p>
+	<img src="img/torrent-1.svg"/>
+
+</section>
+<section class="center">
+	<p>Sciop is for bridging federation with p2p</p>
+	<img src="img/torrent-2.svg"/>
+
+</section>
+<section class="center">
+	<div class="fullscreen">
+		<span class="fragment scrollTo custom"></span>
+		<h2>Sciop today...</h2>
+	<img
+			 src="img/sciop_homepage.png"/>
+		<span class="fragment scrollTo custom"></span>
+	</div>
+</section>
+<section class="center">
+	<h2><a href="https://sciop.net">~ the go to the website interlude ~</a></h2>
+</section>
+<section data-markdown>
+	<textarea data-template>
+	## Hopefully in the interlude you covered
+	- Data structure: Datasets, Parts, Uploads
+	- RSS feeds and auto-torrenting
+	- Submission
+	- Curation, Reviewing
+	</textarea>
+</section>
+<section data-markdown>
+	<textarea data-template>
+		# Design Priorities
+
+		- Low resource use
+		- Deployable
+		- Privacy-preserving
+		- Maintainable by scientists
+		- Lovable by indieweb/old web heads
+
+		... no React, no postgres, no redis, no elasticsearch ...
+	</textarea>
+</section>
+<section class="center">
+	<p>sciop ships 378 lines, 65KB of javascript</p>
+	<div class="center">
+		<pre>
+-------------------------------------------------------------------------------
+Language                     files          blank        comment           code
+-------------------------------------------------------------------------------
+Python                          97           1968           1210           9106
+HTML                            60            126              2           2394
+CSS                             11            317             23           2081
+JavaScript                       4             51             41            378
+INI                              1             25              1             93
+SVG                              4              0              1             64
+Jinja Template                   1              9              0             63
+Mako                             1              8              0             19
+Markdown                         1              1              0              2
+JSON                             1              0              0              1
+-------------------------------------------------------------------------------
+SUM:                           181           2505           1278          14201
+-------------------------------------------------------------------------------
+	</pre>
+	</div>
+</section>
+<section class="center">
+	<h2>~the fastapi/htmx stack~</h2>
+	<a href="https://www.youtube.com/watch?v=XQF8zeOt2rE">fullstack on a budget</a>
+	<p>
+	<span class="hightlight">HATEOAS</span>: Hypertext As The Engine Of Application State.
+	</p>
+	<p>
+		aka
+	</p>
+	<blockquote class="fragment">
+		instead of shipping a whole-ass operating system clientside,
+		<ul>
+			<li>Put stuff on the page</li>
+			<li>Make the page have links and buttons and whatever</li>
+			<li>Clicking stuff makes the page have different stuff on it</li>
+		</ul>
+	</blockquote>
+
+</section>
+<section>
+	<h2>e.g. lazy-loading collapsibles</h2>
+	<div class="row">
+		<div class="column half">
+			<pre class="fragment">
+			<code class="language-html">
+&lt;details&gt;
+	&lt;summary
+	  class=&quot;collapsible-summary&quot;
+	  hx-get=&quot;/datasets/{{ dataset.slug }}/partial&quot;
+	  hx-trigger=&quot;click once&quot;
+	  hx-target=&quot;#dataset-{{ dataset.slug }}&quot;
+	&gt;
+  &lt;div class=&quot;dataset&quot; id=&quot;dataset-{{ dataset.slug }}&quot;&gt;&lt;/div&gt;
+&lt;/details&gt;
+			</code>
+			</pre>
+			<pre class="fragment">
+			<code class="language-python">
+@datasets_router.get("/{dataset_slug}/partial")
+async def dataset_partial(
+    dataset_slug: str,
+    request: Request,
+    dataset: RequireVisibleDataset,
+):
+    return templates.TemplateResponse(
+				request,
+				"partials/dataset.html",
+				{"dataset": dataset}
+		)
+			</code>
+			</pre>
+			<a class="fragment" href="https://sciop.net/datasets/">(demo it)</a>
+		</div>
+		<div class="column half">
+			<img src="img/sciop-collapsible-1.png"/>
+		</div>
+	</div>
+</section>
+<section>
+		<h2>e.g. search</h2>
+		<div class="row">
+			<div class="column half">
+			<pre class="fragment">
+			<code class="language-html">
+&lt;div class=&quot;page-header&quot;&gt;
+  &lt;h1&gt;Datasets&lt;/h1&gt;
+  &lt;span
+		 class=&quot;htmx-indicator loading-indicator&quot;
+     id=&quot;datasets-loading-indicator&quot;&gt;
+      &lt;img src=&quot;/static/img/rings.svg&quot;
+				   alt=&quot;Loading indicator, a spinning ring&quot;/&gt;
+  &lt;/span&gt;
+&lt;/div&gt;
+&lt;div class=&quot;container flex-container column&quot;&gt;
+  &lt;div class=&quot;row search-container&quot; &gt;
+    &lt;input class=&quot;form-control search-input enter-trigger&quot;
+				   type=&quot;search&quot;
+           name=&quot;query&quot;
+				   placeholder=&quot;Begin Typing To Search...&quot;
+           hx-get=&quot;/datasets/search&quot;
+           hx-trigger=&quot;input changed delay:250ms, load, enterKeyUp&quot;
+           hx-target=&quot;#datasets-table&quot;
+           hx-indicator=&quot;#datasets-loading-indicator&quot;
+           hx-swap=&quot;innerHTML&quot;
+    &gt;
+  &lt;/div&gt;
+
+  &lt;div id=&quot;datasets-table&quot; aria-live=&quot;polite&quot;&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+			</code>
+			</pre>
+		</div>
+		<div class="column half">
+			<pre class="fragment">
+			<code class="language-python">
+@datasets_router.get("/search")
+@jinja.hx("partials/datasets.html")
+async def datasets_search(
+    query: str = None,
+		session: SessionDep = None,
+		current_account: CurrentAccount = None
+) -> Page[DatasetRead]:
+    if not query or len(query) < 3:
+        stmt = (
+            select(Dataset)
+            .where(Dataset.visible_to(current_account) == True)
+            .order_by(Dataset.created_at.desc())
+        )
+    else:
+        stmt = (
+						Dataset.search(query)
+						.where(Dataset.visible_to(current_account) == True)
+				)
+    return paginate(conn=session, query=stmt)
+			</code>
+			</pre>
+			<a class="fragment" href="https://sciop.net/datasets/search">(thats HTML and JSON baby)</a>
+		</div>
+	</div>
+</section>
+<section>
+	<div class="row">
+		<div class="column half">
+
+			<h2>Mixins for shared behavior</h2>
+			<p>Searchable...</p>
+			<pre>
+				<code class="language-python">
+class Datasets(SearchableMixin):
+		__searchable__ = {"title": 10, "url": 5, "description": 1}
+
+		def search(self, query) -> "Select":
+				matches = cls.search_statement(query).cte("matches")
+        return (
+            select(cls)
+            .join(
+								matches,
+								onclause=getattr(cls, cls.primary_key_column()) == matches.c.rowid)
+            .order_by(matches.c.rank)
+        )
+				</code>
+			</pre>
+		</div>
+		<div class="column half">
+			<p>Single-source permissions.<br>Hybrid properties bridge DB and ORM</p>
+			<pre>
+				<code class="language-python">
+class Dataset(ModerableMixin):
+    @hybrid_method
+    def visible_to(self, account: Optional["Account"] = None) -> bool:
+        """Whether this item is visible to the given account"""
+        if account is None:
+            return self.is_visible
+        elif not self.is_removed and not self.is_approved:
+            return self.account == account or account.has_scope("review")
+        else:
+            return False
+
+    @visible_to.inplace.expression
+    @classmethod
+    def _visible_to(cls, account: Optional["Account"] = None) -> ColumnElement[bool]:
+				return sqla.and_(
+						cls.is_removed == False,
+						sqla.or_(
+								cls.is_visible == True,
+								account.has_scope("review") == True,
+								cls.account == account,
+						),
+				)
+				</code>
+			</pre>
+		</div>
+	</div>
+</section>
+<section>
+	<h2>Everything is WikiLike Now</h2>
+	<span>automatically save full versions, including relations, on update</span>
+	<div class="row">
+		<div class="column half">
+
+	<pre>
+		<code class="language-python">
+class EditableMixin():
+		@classmethod
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+				"""Make virtual tables on class definition"""
+				@event.listens_for(cls, "after_mapper_constructed")
+				def _mapper_constructed(mapper: Mapper) -> None:
+						_make_mapped_history_table(mapper)
+
+		@staticmethod
+    def editable_session(session: Session) -> Session:
+				"""Event listener to create versions when flushing to DB"""
+        @event.listens_for(session, "after_flush")
+        def after_flush(session: Session, flush_context: UOWTransaction) -> None:
+            timestamp = datetime.now(UTC)
+            for obj in EditableMixin.editable_objects(session.new):
+                create_version(obj, session, flush_context, timestamp, new=True)
+            for obj in EditableMixin.editable_objects(session.dirty):
+                create_version(obj, session, flush_context, timestamp)
+            for obj in EditableMixin.editable_objects(session.deleted):
+                create_version(obj, session, flush_context, timestamp, deleted=True)
+
+        return session
+		</code>
+	</pre>
+
+	</div>
+	</div>
+</section>
+<section>
+	<h2>Moderation</h2>
+	<p>How do we make sure we're not sharing junk?</p>
+	<p>Soft security: allow submissions from anyone, but hide them until review</p>
+	<img src="img/review-panel.png" alt="Review panel"/>
+</section>
+<section>
+	<h2>Moderation</h2>
+	<p>Inline review items</p>
+	<img src="img/review-inline.png" alt="Review items"/>
+</section>
+<section>
+	<h2>Moderation</h2>
+	<p>Account scopes integrated from the DB through the API</p>
+	<img src="img/review-scopes.png" alt="Review panel"/>
+</section>
+<section>
+	<h2>Scoping is complicated</h2>
+	<p>
+		"dataset needs to exist, dataset needs to be approved and not banned,
+		update needs to match model schema,
+		need a currently logged in account, account need to own the dataset or be a reviewer..."
+		 </p>
+	<p>How do we get to a coherent, usable, and performant interface like this?</p>
+
+	<pre>
+		<code class="language-python">
+@datasets_router.patch("/{dataset_slug}")
+async def dataset_edit(
+    dataset_slug: str,
+    dataset_patch: Annotated[DatasetUpdate, Body()],
+    dataset: RequireVisibleDataset,
+    current_account: RequireEditableBy,
+    session: SessionDep,
+    request: Request,
+    response: Response,
+) -> DatasetRead:
+    """Edit a dataset!"""
+    updated_dataset = dataset.update(session, new=dataset_patch, commit=True)
+    if "HX-Request" in request.headers:
+        response.headers["HX-Redirect"] = f"/datasets/{updated_dataset.slug}"
+    return updated_dataset
+		</code>
+	</pre>
+</section>
+<section>
+	<h2>Dependency Injection</h2>
+	<p>A graph of operations s.t. each only happens once, and they only happen when requested</p>
+	<div class="row">
+	<div class="mermaid column half">
+			<pre>
+flowchart
+	Session
+	Session --> GetAccount
+	GetAccount --> RequireAccount
+	Session --> GetDataset
+	GetDataset --> RequireDataset
+	Session --> GetUpload
+	GetUpload --> RequireUpload
+	GetDataset --> RequireEditableItem
+	GetUpload --> RequireEditableItem
+	RequireAccount --> RequireVisibleDataset
+	RequireDataset --> RequireVisibleDataset
+	RequireAccount --> RequireEditableBy
+	RequireEditableItem --> RequireEditableBy
+			</pre>
+	</div>
+		<div class="column half">
+			<pre>
+				<code class="language-python">
+def require_current_account(session: RawSessionDep, token: TokenDep) -> Account:
+		# do auth stuff
+		if not account:
+				raise HTTPException(401)
+		return account
+
+RequireCurrentAccount = Annotated[Account, Depends(require_current_account)]
+
+def require_current_editable_by(
+    current_account: RequireCurrentAccount, editable: RequireEditableItem
+) -> Account:
+    if editable.editable_by(current_account):
+        return current_account
+    else:
+        raise HTTPException(401, "Not permitted to edit")
+
+RequireEditableBy = Annotated[Account, Depends(require_current_editable_by)]
+
+				</code>
+			</pre>
+		</div>
+	</div>
+</section>
+
+<section data-markdown>
+	<textarea data-template>
+		# Have functional website, now what...
+
+		Bittorrent is so simple it's very easy to hack on - wake up the protocol
+
+		- Federated trackers
+
+		- Federated annotation
+
+		- Beyond torrenting...
+	</textarea>
+</section>
+<section>
+	<h2>Side note: torrent parsing & creation in rust</h2>
+	<a href="https://github.com/p2p-ld/torrent-pyd">p2p-ld/torrent-pyd</a>
+	<p>~30x performance improvement where it matters</p>
+	<img src="img/torrent-pyd-bench.png"/>
+</section>
+<section>
+	<h2>Federated Trackers...</h2>
+	<img src="img/torrent-2.svg"/>
+</section>
+<section>
+	<h2>New layers for the bittorrent stack</h2>
+	<img src="img/layers.svg"/>
+</section>
+<section>
+	<h2>A lot of good ideas in bittorrent land...</h2>
+	<img src="img/bep-46.png"/>
+</section>
+<section>
+	<h2>...that never got implemented</h2>.
+	<img src="img/qbt-issue.png"/>
+</section>
+<section>
+	<h2>noob chat</h2>
+	<a href="https://github.com/miniscope/noob">miniscope/noob</a>
+</section>
+
+			</div>
+		</div>
+
+		<script src="reveal.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script src="plugin/menu/menu.js"></script>
+		<script src="plugin/reveald3/reveald3.js"></script>
+		<script src="plugin/mermaid/mermaid.js"></script>
+		<script>
+			// More info about initialization & config:
+			// - https://revealjs.com/initialization/
+			// - https://revealjs.com/config/
+			Reveal.initialize({
+				hash: true,
+				transition: 'fade',
+				transitionSpeed: 'fast',
+				disableLayout: true,
+
+				mermaid: {
+					htmlLabels: false,
+					flowchart: {
+						padding: 30
+					}
+				},
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes, RevealMenu, Reveald3, RevealMermaid]
+			});
+
+			Reveal.on("fragmentshown", (event) => {
+				console.log(event.fragment);
+				console.log(event.fragment.classList.contains("scrollTo"))
+				let classList = event.fragment.classList;
+				if (classList.contains("scrollTo")) {
+					console.log('ya')
+					event.fragment.scrollIntoView({block: "start", behavior: 'smooth'});
+
+				}
+			})
+		</script>
+	</body>
+</html>
