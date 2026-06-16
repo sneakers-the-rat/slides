@@ -159,6 +159,22 @@ jobs:
           name: slides-artifact-4
           path: src/2024-09-17_nwb-linkml/dist/
 
+  slides5:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+      - name: Build
+        run: quarto render
+        working-directory: src/2026-06-16_mio_numpydantic
+      - name: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: slides-artifact-5
+          path: src/2026-06-16_mio_numpydantic/_site/
+
+
   jekyll:
     runs-on: ubuntu-latest
     needs:
@@ -166,6 +182,7 @@ jobs:
       - slides2
       - slides3
       - slides4
+      - slides5
 
     steps:
       - name: install tree
@@ -202,6 +219,13 @@ jobs:
         with:
           name: slides-artifact-4
           path: site/2024-09-17_nwb-linkml/
+
+
+      - name: Download Slides Artifact 5
+        uses: actions/download-artifact@v4
+        with:
+          name: slides-artifact-5
+          path: site/2026-06-16_mio_numpydantic/
 
       - name: run tree 1
         run: tree ./
