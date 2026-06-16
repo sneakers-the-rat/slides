@@ -591,7 +591,7 @@ NDArray[Shape[Literal[300], Literal[200], np.uint8]
 
 # Mio/Noob {data-name="Mio/Noob"}
 
-## tl;dr it's pretty much done
+## tl;dr it's pretty much done {data-stack-name="Mio/Noob"}
 
 - Code for core loop is translated
 - Spec is written as desired
@@ -599,7 +599,7 @@ NDArray[Shape[Literal[300], Literal[200], np.uint8]
 TODO:
 - trying to "use all the features" - nested tube/map needs some work
 
-## Why the numpydantic detour
+## Why the numpydantic detour {data-stack-name="Mio/Noob"}
 
 - the processing functions
 - the exact case of "we have one main thing but also want to kind of glue some other stuff on"
@@ -608,9 +608,17 @@ TODO:
 
 # Noob Experiments {data-name="Noob Experiments"}
 
-## That's right we rewrote it in rust
+## That's right we rewrote it in rust {data-stack-name="Noob Experiments"}
 
-## Spiking Neural Net
+Before:
+
+![](assets/noob-core-pre.png)
+
+After
+
+![](assets/noob-core-post.png)
+
+## Spiking Neural Net {data-stack-name="Noob Experiments"}
 
 - code changes needed
 - SNN example diagram

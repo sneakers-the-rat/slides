@@ -27,3 +27,7 @@ pre.numberSource code > span > a:first-child::before {
 .reveal a {
   text-decoration: underline;
 }
+
+#TOC ul ul li {
+  font-size: 0.5em;
+}
