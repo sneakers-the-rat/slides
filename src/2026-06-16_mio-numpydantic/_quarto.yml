@@ -1,0 +1,18 @@
+project:
+  type: website
+
+website:
+  title: "Lab Meeting - 2026-06-16 - Numpydantic and MIO/Noob integration"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - about.qmd
+
+format:
+  storybook-revealjs:
+    css: styles.css
+    toc: true
+
+
+

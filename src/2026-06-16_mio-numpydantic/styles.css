@@ -1,0 +1,29 @@
+/* css styles */
+
+.title-slide {
+
+}
+
+.reveal {
+  background-size: cover;
+
+  code {
+    color: #f00;
+  }
+}
+
+.reveal h2 {
+  font-size: 2em;
+}
+
+.reveal pre.numberSource code > span {
+  left: 0 !important;
+}
+
+pre.numberSource code > span > a:first-child::before {
+  width: 0;
+}
+
+.reveal a {
+  text-decoration: underline;
+}
